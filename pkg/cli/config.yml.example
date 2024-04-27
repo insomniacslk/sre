@@ -1,0 +1,8 @@
+# Configuration for the `tools` subcommand
+tools:
+  install_dir: ~/bin
+  src_dir: ~/git/sre
+
+# Configuration for the `omg` subcommand
+omg:
+  template: ~/.config/sre/omg.template

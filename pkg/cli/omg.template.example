@@ -1,0 +1,39 @@
+Welcome, first-responder!
+
+Do not panic, here you will find the most important resources for your oncall.
+
+{{ ruler }}
+{{ bold "Runbooks" }}
+
+See {{ url "runbooks" "https://example.org/sre/runbooks" }}.
+
+{{ ruler }}
+{{ bold "Clusters" }}
+
+Run the command `clusters` from {{ url "insomniac/sre" "https://git.example.org/insomniac/sre" }}.
+
+Install it with {{ italic "`sre tools install clusters`" }}
+
+{{ ruler }}
+{{ bold "Install team tools" }}
+
+{{ ruler }}
+{{ bold "Slack channels" }}
+
+* {{ url "#incident-management" "https://app.slack.com/client/abcdef/abcdef" }} for general incident management
+* {{ url "#mission-control" "https://app.slack.com/client/abcdef/ababab" }} for the Mission Control team
+* {{ url "#memes" "https://app.slack.com/client/abcdef/mememe" }} for memes
+
+{{ ruler }}
+{{ bold "Pager" }}
+
+The main interface is {{ url "PagerDuty" "https://example.pagerduty.com/" }}.
+
+* {{ url "All incidents" "https://example.pagerduty.com/incidents" }}
+* {{ url "My oncall" "https://example.pagerduty.com/my-on-call" }}
+* {{ url "Schedules" "https://example.pagerduty.com/schedules-new" }}
+
+{{ ruler }}
+{{ bold "Image" }}
+
+{{ fetch "https://insomniac.slackware.it/static/logo.png" | image }}
