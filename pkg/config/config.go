@@ -20,9 +20,10 @@ type OmgConfig struct {
 	Template string `mapstructure:"template"`
 }
 
-type ToolsConfig struct {
-	InstallDir string `mapstructure:"install_dir"`
-	SrcDir     string `mapstructure:"src_dir"`
+type ToolsConfig []struct {
+	Name        string `mapstructure:"name"`
+	Description string `mapstructure:"description"`
+	URL         string `mapstructure:"url"`
 }
 
 type VpnConfig struct {
@@ -53,28 +54,12 @@ func (c *Config) Validate() error {
 	}
 	p, err := homedir.Expand(c.Omg.Template)
 	if err != nil {
-		return fmt.Errorf("faild to expand `tools.install_dir` %q: %w", c.Tools.InstallDir, err)
+		return fmt.Errorf("faild to expand `omg.template` %q: %w", c.Omg.Template, err)
 	}
 	c.Omg.Template = p
 
-	// TODO move validation to the `tools` command
 	// validate `tools`
-	if c.Tools.InstallDir == "" {
-		return fmt.Errorf("`tools.install_dir` cannot be empty")
-	}
-	p, err = homedir.Expand(c.Tools.InstallDir)
-	if err != nil {
-		return fmt.Errorf("faild to expand `tools.install_dir` %q: %w", c.Tools.InstallDir, err)
-	}
-	c.Tools.InstallDir = p
-	if c.Tools.SrcDir == "" {
-		return fmt.Errorf("`tools.src_dir` cannot be empty")
-	}
-	p, err = homedir.Expand(c.Tools.SrcDir)
-	if err != nil {
-		return fmt.Errorf("faild to expand `tools.src_dir` %q: %w", c.Tools.SrcDir, err)
-	}
-	c.Tools.SrcDir = p
+	// nothing to do for now
 
 	return nil
 }

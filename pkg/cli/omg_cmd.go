@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"insomniac/sre/pkg/ansi"
 	"insomniac/sre/pkg/config"
 	"io"
 	"net/http"
@@ -28,13 +29,13 @@ func NewOmgCmd(cfg *config.Config) *cobra.Command {
 			}
 			funcMap := template.FuncMap{
 				"url": func(text, url string) string {
-					return toAnsiURL(text, url)
+					return ansi.ToURL(text, url)
 				},
 				"ruler": func() string {
 					return strings.Repeat("=", 80)
 				},
 				"image": func(img []byte) (string, error) {
-					return toTerminalImage(img)
+					return ansi.ToTerminalImage(img)
 				},
 				"cat": func(file string) ([]byte, error) {
 					file, err := homedir.Expand(file)
@@ -63,10 +64,10 @@ func NewOmgCmd(cfg *config.Config) *cobra.Command {
 					return buf, nil
 				},
 				"bold": func(text string) string {
-					return bold(text)
+					return ansi.Bold(text)
 				},
 				"italic": func(text string) string {
-					return italic(text)
+					return ansi.Italic(text)
 				},
 				"red": func(text string) string {
 					return color.RedString(text)

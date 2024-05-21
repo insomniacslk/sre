@@ -2,20 +2,17 @@ package tools
 
 import (
 	"fmt"
+	"insomniac/sre/pkg/ansi"
 	"insomniac/sre/pkg/config"
 )
 
 func List(cfg *config.ToolsConfig) error {
-	for name, tool := range AllTools {
-		isInstalled, err := tool.IsInstalled(cfg.InstallDir)
-		if err != nil {
-			return fmt.Errorf("failed to check if %q is installed: %w", name, err)
-		}
-		if isInstalled {
-			fmt.Printf("✅ %s\n", name)
-		} else {
-			fmt.Printf("   %s\n", name)
-		}
+	if len(*cfg) == 0 {
+		fmt.Printf("No tools specified in config\n")
+		return nil
+	}
+	for _, tool := range *cfg {
+		fmt.Printf("%s: %s\n", ansi.ToURL(tool.Name, tool.URL), tool.Description)
 	}
 	return nil
 }

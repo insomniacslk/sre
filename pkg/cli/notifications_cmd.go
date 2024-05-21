@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"insomniac/sre/pkg/ansi"
 	"insomniac/sre/pkg/config"
 	"log"
 	"time"
@@ -85,15 +86,15 @@ func NewNotificationsCmd(cfg *config.Config) *cobra.Command {
 				start := startedAt.In(loc)
 				switch n.Type {
 				case "email_notification":
-					fmt.Printf(bold("[%s]")+": E-mail to %s (%s)\n", start.String(), toAnsiURL(n.User.Summary, n.User.HTMLURL), toAnsiURL(n.Address, "mailto:"+n.Address))
+					fmt.Printf(ansi.Bold("[%s]")+": E-mail to %s (%s)\n", start.String(), ansi.ToURL(n.User.Summary, n.User.HTMLURL), ansi.ToURL(n.Address, "mailto:"+n.Address))
 				case "phone_notification":
-					fmt.Printf(bold("[%s]")+": Phone call to %s (%s)\n", start.String(), toAnsiURL(n.User.Summary, n.User.HTMLURL), toAnsiURL(n.Address, "phone:"+n.Address))
+					fmt.Printf(ansi.Bold("[%s]")+": Phone call to %s (%s)\n", start.String(), ansi.ToURL(n.User.Summary, n.User.HTMLURL), ansi.ToURL(n.Address, "phone:"+n.Address))
 				case "sms_notification":
-					fmt.Printf(bold("[%s]")+": SMS to %s (%s)\n", start.String(), toAnsiURL(n.User.Summary, n.User.HTMLURL), toAnsiURL(n.Address, "sms:"+n.Address))
+					fmt.Printf(ansi.Bold("[%s]")+": SMS to %s (%s)\n", start.String(), ansi.ToURL(n.User.Summary, n.User.HTMLURL), ansi.ToURL(n.Address, "sms:"+n.Address))
 				case "push_notification":
-					fmt.Printf(bold("[%s]")+": Push to %s\n", start.String(), toAnsiURL(n.User.Summary, n.User.HTMLURL))
+					fmt.Printf(ansi.Bold("[%s]")+": Push to %s\n", start.String(), ansi.ToURL(n.User.Summary, n.User.HTMLURL))
 				default:
-					fmt.Printf(bold("[%s]")+": %s to %s (%s)\n", start.String(), n.Type, toAnsiURL(n.User.Summary, n.User.HTMLURL), n.Address)
+					fmt.Printf(ansi.Bold("[%s]")+": %s to %s (%s)\n", start.String(), n.Type, ansi.ToURL(n.User.Summary, n.User.HTMLURL), n.Address)
 					fmt.Printf("%+v\n", n)
 				}
 			}

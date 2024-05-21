@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"insomniac/sre/pkg/ansi"
 	"insomniac/sre/pkg/config"
 	"log"
 	"strings"
@@ -42,27 +43,27 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 					log.Fatalf("Failed to get escalation policies: %v", err)
 				}
 				for _, u := range resp.Users {
-					fmt.Printf(bold("Name      :")+" %s\n", u.Name)
-					fmt.Printf(bold("Email     :")+" %s\n", toAnsiURL(u.Email, "mailto:"+u.Email))
-					fmt.Printf(bold("Title     :")+" %s\n", u.JobTitle)
-					fmt.Printf(bold("Time zone :")+" %s\n", u.Timezone)
-					fmt.Print(bold("Teams     :\n"))
+					fmt.Printf(ansi.Bold("Name      :")+" %s\n", u.Name)
+					fmt.Printf(ansi.Bold("Email     :")+" %s\n", ansi.ToURL(u.Email, "mailto:"+u.Email))
+					fmt.Printf(ansi.Bold("Title     :")+" %s\n", u.JobTitle)
+					fmt.Printf(ansi.Bold("Time zone :")+" %s\n", u.Timezone)
+					fmt.Print(ansi.Bold("Teams     :\n"))
 					for _, t := range u.Teams {
-						fmt.Printf("  %s\n", toAnsiURL(t.Summary, t.HTMLURL))
+						fmt.Printf("  %s\n", ansi.ToURL(t.Summary, t.HTMLURL))
 					}
-					fmt.Print(bold("Contacts  :\n"))
+					fmt.Print(ansi.Bold("Contacts  :\n"))
 					for _, c := range u.ContactMethods {
 						switch c.Type {
 						case "email_contact_method_reference":
-							fmt.Printf("  E-mail: %s (%s)\n", toAnsiURL(c.Address, "mailto:"+c.Address), c.Summary)
+							fmt.Printf("  E-mail: %s (%s)\n", ansi.ToURL(c.Address, "mailto:"+c.Address), c.Summary)
 						case "phone_contact_method":
 							phoneNum := fmt.Sprintf("+%d%s", c.CountryCode, c.Address)
-							fmt.Printf("  Phone : %s (%s)\n", toAnsiURL(phoneNum, "tel:"+phoneNum), c.Summary)
+							fmt.Printf("  Phone : %s (%s)\n", ansi.ToURL(phoneNum, "tel:"+phoneNum), c.Summary)
 						case "push_notification_contact_method":
 							fmt.Printf("  Push  : %s\n", c.Summary)
 						case "sms_contact_method":
 							phoneNum := fmt.Sprintf("+%d%s", c.CountryCode, c.Address)
-							fmt.Printf("  SMS   : %s (%s)\n", toAnsiURL(phoneNum, "sms:"+phoneNum), c.Summary)
+							fmt.Printf("  SMS   : %s (%s)\n", ansi.ToURL(phoneNum, "sms:"+phoneNum), c.Summary)
 						default:
 							fmt.Printf("  %s: %s (%s)\n", c.Address, c.Type, c.Summary)
 						}
@@ -83,13 +84,13 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 				teams := make(map[string]*pagerduty.Team)
 				users := make(map[string]*pagerduty.User)
 				for _, ep := range resp.EscalationPolicies {
-					fmt.Printf(bold("Name:")+" %s\n", toAnsiURL(ep.Name, ep.HTMLURL))
-					fmt.Printf(bold("Description:")+" %s\n", ep.Description)
-					fmt.Print(bold("Services:") + "\n")
+					fmt.Printf(ansi.Bold("Name:")+" %s\n", ansi.ToURL(ep.Name, ep.HTMLURL))
+					fmt.Printf(ansi.Bold("Description:")+" %s\n", ep.Description)
+					fmt.Print(ansi.Bold("Services:") + "\n")
 					for _, s := range ep.Services {
-						fmt.Printf("    %s\n", toAnsiURL(s.Summary, s.HTMLURL))
+						fmt.Printf("    %s\n", ansi.ToURL(s.Summary, s.HTMLURL))
 					}
-					fmt.Print(bold("Teams:") + "\n")
+					fmt.Print(ansi.Bold("Teams:") + "\n")
 					for _, t := range ep.Teams {
 						// FIXME: for some reason the escalation policies API
 						// does not return team details, despite being specified
@@ -104,12 +105,12 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 							}
 							teams[team.ID] = team
 						}
-						fmt.Printf("    %s (Description: %q)\n", toAnsiURL(team.Summary, team.HTMLURL), team.Description)
+						fmt.Printf("    %s (Description: %q)\n", ansi.ToURL(team.Summary, team.HTMLURL), team.Description)
 					}
-					fmt.Print(bold("Escalation rules:") + "\n")
+					fmt.Print(ansi.Bold("Escalation rules:") + "\n")
 					for _, r := range ep.EscalationRules {
 						for _, t := range r.Targets {
-							fmt.Printf("    %s\n", toAnsiURL(t.Summary, t.HTMLURL))
+							fmt.Printf("    %s\n", ansi.ToURL(t.Summary, t.HTMLURL))
 							now := time.Now()
 							pastHour := now.Add(-time.Hour)
 							nextHour := now.Add(time.Hour)
@@ -135,7 +136,7 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 									}
 									users[user.ID] = user
 								}
-								fmt.Printf("        %s (%s)\n", toAnsiURL(user.Name, user.HTMLURL), toAnsiURL(user.Email, "mailto:"+user.Email))
+								fmt.Printf("        %s (%s)\n", ansi.ToURL(user.Name, user.HTMLURL), ansi.ToURL(user.Email, "mailto:"+user.Email))
 							} else {
 								currentOncalls, err := client.ListOnCallUsersWithContext(ctx, t.ID, oopts)
 								if err != nil {
@@ -149,7 +150,7 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 								}
 								alreadyPrinted := make(map[string]struct{})
 								for _, u := range currentOncalls {
-									fmt.Printf("        %s (%s)\n", toAnsiURL(u.Name, u.HTMLURL), toAnsiURL(u.Email, "mailto:"+u.Email))
+									fmt.Printf("        %s (%s)\n", ansi.ToURL(u.Name, u.HTMLURL), ansi.ToURL(u.Email, "mailto:"+u.Email))
 									alreadyPrinted[u.ID] = struct{}{}
 								}
 								for _, u := range nextOncalls {
@@ -157,7 +158,7 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 										// already printed, don't print it again
 										continue
 									}
-									fmt.Printf("        %s (%s)\n", toAnsiURL(u.Name, u.HTMLURL), toAnsiURL(u.Email, "mailto:"+u.Email))
+									fmt.Printf("        %s (%s)\n", ansi.ToURL(u.Name, u.HTMLURL), ansi.ToURL(u.Email, "mailto:"+u.Email))
 								}
 							}
 						}

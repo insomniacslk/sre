@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"insomniac/sre/pkg/ansi"
 	"insomniac/sre/pkg/config"
 	"log"
 	"strings"
@@ -96,7 +97,7 @@ func NewIncidentsCmd(cfg *config.Config) *cobra.Command {
 				if err != nil {
 					logrus.Fatalf("Failed to parse time %q: %v", incident.CreatedAt, err)
 				}
-				fmt.Printf(bold("[%s]")+" %s\n", createdAt.In(loc), toAnsiURL(incident.Summary, incident.HTMLURL))
+				fmt.Printf(ansi.Bold("[%s]")+" %s\n", createdAt.In(loc), ansi.ToURL(incident.Summary, incident.HTMLURL))
 				fmt.Printf("     Urgency: %s\n", incident.Urgency)
 				var statusIcon string
 				switch incident.Status {
@@ -119,15 +120,15 @@ func NewIncidentsCmd(cfg *config.Config) *cobra.Command {
 				} else {
 					fmt.Printf("     Not resolved\n")
 				}
-				fmt.Printf("     Service: %s\n", toAnsiURL(incident.Service.Summary, incident.Service.HTMLURL))
-				fmt.Printf("     Last changed by: %s\n", toAnsiURL(incident.LastStatusChangeBy.Summary, incident.LastStatusChangeBy.HTMLURL))
+				fmt.Printf("     Service: %s\n", ansi.ToURL(incident.Service.Summary, incident.Service.HTMLURL))
+				fmt.Printf("     Last changed by: %s\n", ansi.ToURL(incident.LastStatusChangeBy.Summary, incident.LastStatusChangeBy.HTMLURL))
 				fmt.Printf("     Trigger: %s\n", incident.FirstTriggerLogEntry.Summary)
 				var teams []string
 				for _, team := range incident.Teams {
-					teams = append(teams, toAnsiURL(team.Summary, team.HTMLURL))
+					teams = append(teams, ansi.ToURL(team.Summary, team.HTMLURL))
 				}
 				fmt.Printf("     Teams: %s\n", strings.Join(teams, ", "))
-				fmt.Printf("     Escalation policy: %s\n", toAnsiURL(incident.EscalationPolicy.Summary, incident.EscalationPolicy.HTMLURL))
+				fmt.Printf("     Escalation policy: %s\n", ansi.ToURL(incident.EscalationPolicy.Summary, incident.EscalationPolicy.HTMLURL))
 			}
 			fmt.Printf("Found %d incidents for teams matching %q between %s and %s", len(allIncidents), cfg.PagerDuty.Teams, start, end)
 		},
