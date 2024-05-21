@@ -1,7 +1,9 @@
 # Configuration for the `tools` subcommand
 tools:
-  install_dir: ~/bin
-  src_dir: ~/git/sre
+  - name: wut
+    url: https://github.com/insomniacslk/wut
+  - name: lol
+    url: https://github.com/insomniacslk/lol
 
 # Configuration for the `omg` subcommand
 omg:
