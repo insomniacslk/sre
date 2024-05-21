@@ -1,8 +1,10 @@
 # Configuration for the `tools` subcommand
 tools:
   - name: wut
+    description: Explain acronyms
     url: https://github.com/insomniacslk/wut
   - name: lol
+    description: Provides shortcuts in a browser
     url: https://github.com/insomniacslk/lol
 
 # Configuration for the `omg` subcommand
