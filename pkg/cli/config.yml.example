@@ -10,3 +10,10 @@ tools:
 # Configuration for the `omg` subcommand
 omg:
   template: ~/.config/sre/omg.template
+
+pagerduty:
+  user_token: your_token_here
+
+oncall:
+  default_action: oncall
+  default_query: your oncall schedule name

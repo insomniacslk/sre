@@ -34,7 +34,8 @@ type VpnConfig struct {
 }
 
 type OncallConfig struct {
-	EscalationPolicy string `mapstructure:"escalation_policy"`
+	DefaultAction string `mapstructure:"default_action"`
+	DefaultQuery  string `mapstructure:"default_query"`
 }
 
 type PageConfig struct {

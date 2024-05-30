@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"insomniac/sre/pkg/ansi"
 	"insomniac/sre/pkg/config"
-	"log"
 	"strings"
 	"time"
 
@@ -17,30 +16,49 @@ import (
 func NewOncallCmd(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "oncall",
-		Short: "Interact with the oncall tool (PagerDuty)",
+		Short: "Interact with the oncall tool (PagerDuty). Commands: ep (escalation policy, shortcut: %), user (shortcut: @), sc (schedule, shortcut: +), oncall",
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.Background()
 			client := pagerduty.NewClient(cfg.PagerDuty.UserToken)
 
 			separator := strings.Repeat("-", 80)
-			query := cfg.Oncall.EscalationPolicy
-			if len(args) != 0 {
-				query = args[0]
+			action := cfg.Oncall.DefaultAction
+			query := cfg.Oncall.DefaultQuery
+			if len(args) > 0 {
+				action = args[0]
+			}
+			if len(args) > 1 {
+				query = strings.Join(args[1:], " ")
+			}
+			if action == "" {
+				logrus.Fatalf("No action specified")
 			}
 			if query == "" {
-				log.Fatalf("No schedule pattern specified")
+				logrus.Fatalf("No query specified")
 			}
-			if query[0] == '@' {
-				// searching for a user
-				query = query[1:]
+			// action shortcuts
+			switch action[0] {
+			case '@':
+				action = "user"
+				query = strings.Join(args, " ")[1:]
+			case '+':
+				action = "schedule"
+				query = strings.Join(args, " ")[1:]
+			case '%':
+				action = "ep"
+				query = strings.Join(args, " ")[1:]
+			}
+			switch action {
+			case "u", "user":
+				// search for a user
 				opts := pagerduty.ListUsersOptions{
 					Query:    query,
 					Includes: []string{"contact_methods"},
 				}
 				resp, err := client.ListUsersWithContext(ctx, opts)
 				if err != nil {
-					log.Fatalf("Failed to get escalation policies: %v", err)
+					logrus.Fatalf("Failed to get escalation policies: %v", err)
 				}
 				for _, u := range resp.Users {
 					fmt.Printf(ansi.Bold("Name      :")+" %s\n", u.Name)
@@ -70,7 +88,26 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 					}
 					fmt.Println(separator)
 				}
-			} else {
+			case "s", "sc", "sched", "schedule":
+				// search for a schedule
+				opts := pagerduty.ListSchedulesOptions{
+					Query:    query,
+					Includes: []string{"schedule_layers"},
+				}
+				resp, err := client.ListSchedulesWithContext(ctx, opts)
+				if err != nil {
+					logrus.Fatalf("Failed to get schedules: %v", err)
+				}
+				for _, sc := range resp.Schedules {
+					fmt.Printf("%s\n", ansi.Bold(sc.Name))
+					fmt.Printf("    Summary: %s\n", ansi.ToURL(sc.Summary, sc.HTMLURL))
+					fmt.Printf("    Description: %s\n", sc.Description)
+					fmt.Printf("    Users:\n")
+					for _, user := range sc.Users {
+						fmt.Printf("        %s\n", ansi.ToURL(user.Summary, user.HTMLURL))
+					}
+				}
+			case "e", "ep", "escalation_policy", "escalation-policy", "escalationpolicy":
 				// search for an escalation policy
 				opts := pagerduty.ListEscalationPoliciesOptions{
 					Query:    query,
@@ -78,7 +115,7 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 				}
 				resp, err := client.ListEscalationPoliciesWithContext(ctx, opts)
 				if err != nil {
-					log.Fatalf("Failed to get escalation policies: %v", err)
+					logrus.Fatalf("Failed to get escalation policies: %v", err)
 				}
 				// cache teams to minimize API calls
 				teams := make(map[string]*pagerduty.Team)
@@ -101,7 +138,7 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 							// fetch team
 							team, err = client.GetTeamWithContext(ctx, t.ID)
 							if err != nil {
-								log.Fatalf("Failed to fetch team with ID %q: %v", t.ID, err)
+								logrus.Fatalf("Failed to fetch team with ID %q: %v", t.ID, err)
 							}
 							teams[team.ID] = team
 						}
@@ -132,7 +169,7 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 									}
 									user, err = client.GetUserWithContext(ctx, t.ID, opts)
 									if err != nil {
-										log.Fatalf("Failed to get escalation policies: %v", err)
+										logrus.Fatalf("Failed to get escalation policies: %v", err)
 									}
 									users[user.ID] = user
 								}
@@ -165,6 +202,60 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 					}
 					fmt.Println(separator)
 				}
+			case "o", "on", "oncall":
+				// search for an oncall
+				scheduleIDs := make([]string, 0)
+				// Resolve schedule name into ID(s)
+				sOpts := pagerduty.ListSchedulesOptions{
+					Query: query,
+				}
+				sResp, err := client.ListSchedulesWithContext(ctx, sOpts)
+				if err != nil {
+					logrus.Fatalf("Failed to get schedules: %v", err)
+				}
+				for _, sc := range sResp.Schedules {
+					scheduleIDs = append(scheduleIDs, sc.ID)
+				}
+
+				opts := pagerduty.ListOnCallOptions{
+					ScheduleIDs: scheduleIDs,
+					Includes:    []string{"users"},
+					Until:       time.Now().Add(24 * time.Hour).Format(time.RFC3339),
+				}
+				resp, err := client.ListOnCallsWithContext(ctx, opts)
+				if err != nil {
+					logrus.Fatalf("Failed to get schedules: %v", err)
+				}
+				oncallBySchedule := make(map[string][]*pagerduty.OnCall)
+				for _, oc := range resp.OnCalls {
+					_, ok := oncallBySchedule[oc.Schedule.Summary]
+					if !ok {
+						oncallBySchedule[oc.Schedule.Summary] = []*pagerduty.OnCall{&oc}
+					} else {
+						oncallBySchedule[oc.Schedule.Summary] = append(
+							oncallBySchedule[oc.Schedule.Summary],
+							&oc,
+						)
+					}
+				}
+				for sched, oncalls := range oncallBySchedule {
+					idx := 0
+					fmt.Printf("%s:\n", ansi.Bold(sched))
+					curOrNext := "Current"
+					for _, oc := range oncalls {
+						if idx > 0 {
+							curOrNext = "Next   "
+						}
+						fmt.Printf("%s: %s (%s)\n",
+							curOrNext,
+							ansi.ToURL(oc.User.Summary, oc.User.HTMLURL),
+							oc.User.Email,
+						)
+						idx++
+					}
+				}
+			default:
+				logrus.Fatalf("Unknown action %q", action)
 			}
 		},
 	}
