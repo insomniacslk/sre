@@ -240,7 +240,16 @@ func NewOncallCmd(cfg *config.Config) *cobra.Command {
 				}
 				for sched, oncalls := range oncallBySchedule {
 					idx := 0
-					fmt.Printf("%s:\n", ansi.Bold(sched))
+					schedURL := ""
+					if len(oncalls) > 0 {
+						// assume that the first schedule URL is the same for
+						// all the other items, because they were grouped by
+						// schedule name
+						schedURL = oncalls[0].Schedule.HTMLURL
+						fmt.Printf("%s:\n", ansi.Bold(ansi.ToURL(sched, schedURL)))
+					} else {
+						fmt.Printf("%s:\n", ansi.Bold(sched))
+					}
 					curOrNext := "Current"
 					for _, oc := range oncalls {
 						if idx > 0 {
