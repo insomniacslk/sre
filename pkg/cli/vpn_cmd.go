@@ -1,9 +1,10 @@
 package cli
 
 import (
-	"insomniac/sre/pkg/config"
-	"insomniac/sre/pkg/vpn"
 	"log"
+
+	"github.com/insomniacslk/sre/pkg/config"
+	"github.com/insomniacslk/sre/pkg/vpn"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

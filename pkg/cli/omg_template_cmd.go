@@ -3,7 +3,8 @@ package cli
 import (
 	_ "embed"
 	"fmt"
-	"insomniac/sre/pkg/config"
+
+	"github.com/insomniacslk/sre/pkg/config"
 
 	"github.com/spf13/cobra"
 )

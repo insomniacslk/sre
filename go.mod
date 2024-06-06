@@ -1,4 +1,4 @@
-module insomniac/sre
+module github.com/insomniacslk/sre
 
 go 1.22.0
 

@@ -2,13 +2,14 @@ package cli
 
 import (
 	"fmt"
-	"insomniac/sre/pkg/ansi"
-	"insomniac/sre/pkg/config"
 	"io"
 	"net/http"
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/insomniacslk/sre/pkg/ansi"
+	"github.com/insomniacslk/sre/pkg/config"
 
 	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"

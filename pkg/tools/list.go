@@ -2,8 +2,9 @@ package tools
 
 import (
 	"fmt"
-	"insomniac/sre/pkg/ansi"
-	"insomniac/sre/pkg/config"
+
+	"github.com/insomniacslk/sre/pkg/ansi"
+	"github.com/insomniacslk/sre/pkg/config"
 )
 
 func List(cfg *config.ToolsConfig) error {

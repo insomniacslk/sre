@@ -1,9 +1,10 @@
 package cli
 
 import (
-	"insomniac/sre/pkg/config"
-	"insomniac/sre/pkg/tools"
 	"log"
+
+	"github.com/insomniacslk/sre/pkg/config"
+	"github.com/insomniacslk/sre/pkg/tools"
 
 	"github.com/spf13/cobra"
 )

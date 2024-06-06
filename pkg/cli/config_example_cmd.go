@@ -2,7 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"insomniac/sre/pkg/config"
+
+	"github.com/insomniacslk/sre/pkg/config"
 
 	_ "embed"
 

@@ -3,10 +3,11 @@ package cli
 import (
 	"context"
 	"fmt"
-	"insomniac/sre/pkg/ansi"
-	"insomniac/sre/pkg/config"
 	"log"
 	"time"
+
+	"github.com/insomniacslk/sre/pkg/ansi"
+	"github.com/insomniacslk/sre/pkg/config"
 
 	"github.com/PagerDuty/go-pagerduty"
 	"github.com/sirupsen/logrus"

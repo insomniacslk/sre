@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"insomniac/sre/pkg/cli"
+	"github.com/insomniacslk/sre/pkg/cli"
 )
 
 const progname = "sre"

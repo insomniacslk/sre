@@ -3,7 +3,8 @@ package vpn
 import (
 	"errors"
 	"fmt"
-	"insomniac/sre/pkg/config"
+
+	"github.com/insomniacslk/sre/pkg/config"
 
 	"github.com/mitchellh/go-homedir"
 )
