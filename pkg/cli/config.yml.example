@@ -13,6 +13,7 @@ omg:
 
 pagerduty:
   user_token: your_token_here
+  teams: your-pagerduty-team-name # if you want to use a team ID, prefix it with a "+"
 
 oncall:
   default_action: oncall
