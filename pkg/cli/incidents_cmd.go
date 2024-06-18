@@ -131,7 +131,7 @@ func NewIncidentsCmd(cfg *config.Config) *cobra.Command {
 				fmt.Printf("     Teams: %s\n", strings.Join(teams, ", "))
 				fmt.Printf("     Escalation policy: %s\n", ansi.ToURL(incident.EscalationPolicy.Summary, incident.EscalationPolicy.HTMLURL))
 			}
-			fmt.Printf("Found %d incidents for teams matching %q between %s and %s", len(allIncidents), cfg.PagerDuty.Teams, start, end)
+			fmt.Printf("Found %d incidents for teams matching %q between %s and %s\n", len(allIncidents), cfg.PagerDuty.Teams, start, end)
 		},
 	}
 }
