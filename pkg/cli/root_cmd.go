@@ -13,7 +13,7 @@ func InitRootCmd(progname string) {
 		rootCmd := &cobra.Command{
 			Use:   progname,
 			Short: fmt.Sprintf("%q is the uber-CLI for an SRE team.", progname),
-			Long:  fmt.Sprintf("%s is the uber-CLI for an SRE team. It includes subcommands that help with incident response, documentation, cluster information, cluster validation, and much more", progname),
+			Long:  fmt.Sprintf("%s is the uber-CLI for an SRE team. It includes subcommands that help with incident response, documentation, oncall, and much more", progname),
 			Args:  cobra.MinimumNArgs(1),
 			Run:   nil,
 		}
