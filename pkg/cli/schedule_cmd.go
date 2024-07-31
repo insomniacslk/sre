@@ -33,9 +33,18 @@ func NewScheduleCmd(cfg *config.Config) *cobra.Command {
 			log.Printf("Searching schedules matching %q", scheduleID)
 			// search for a schedule
 			now := time.Now()
+			duration := 24 * time.Hour
+			if cfg.Schedule.DefaultDuration != "" {
+				var err error
+				duration, err = time.ParseDuration(cfg.Schedule.DefaultDuration)
+				if err != nil {
+					log.Fatalf("Failed to parse duration %q: %v", cfg.Schedule.DefaultDuration, err)
+				}
+			}
+			until := now.Add(duration)
 			opts := pagerduty.GetScheduleOptions{
 				Since:    now.Format(time.RFC3339),
-				Until:    now.Add(24 * time.Hour).Format(time.RFC3339),
+				Until:    until.Format(time.RFC3339),
 				TimeZone: cfg.Timezone,
 			}
 			sched, err := client.GetScheduleWithContext(ctx, scheduleID, opts)
@@ -49,6 +58,7 @@ func NewScheduleCmd(cfg *config.Config) *cobra.Command {
 			for _, user := range sched.Users {
 				fmt.Printf("        %s\n", ansi.ToURL(user.Summary, user.HTMLURL))
 			}
+			fmt.Println()
 			for _, entry := range sched.FinalSchedule.RenderedScheduleEntries {
 				start, err := time.Parse(time.RFC3339, entry.Start)
 				if err != nil {
@@ -59,7 +69,7 @@ func NewScheduleCmd(cfg *config.Config) *cobra.Command {
 					log.Fatalf("End time %q is not in RFC3339 format: %v", entry.End, err)
 				}
 				timeFmt := "Mon 02 Jan 2006"
-				fmt.Printf("%s - %s (%s) %+v\n",
+				fmt.Printf("%s - %s (%s)\t%+v\n",
 					start.Format(timeFmt),
 					end.Format(timeFmt),
 					end.Sub(start),

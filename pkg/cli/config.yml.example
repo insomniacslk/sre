@@ -15,6 +15,7 @@ omg:
 
 schedule:
   default_schedule: <your pagerduty schedule ID>
+  default_duration: 7d # how far in the future we want to see the schedule. In Go duration format
 
 pagerduty:
   user_token: your_token_here
