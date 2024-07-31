@@ -1,3 +1,5 @@
+timezone: Europe/Rome
+
 # Configuration for the `tools` subcommand
 tools:
   - name: wut
@@ -10,6 +12,9 @@ tools:
 # Configuration for the `omg` subcommand
 omg:
   template: ~/.config/sre/omg.template
+
+schedule:
+  default_schedule: <your pagerduty schedule ID>
 
 pagerduty:
   user_token: your_token_here
