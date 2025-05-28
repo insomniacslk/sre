@@ -13,7 +13,6 @@ type Config struct {
 	Vpn       VpnConfig       `mapstructure:"vpn"`
 	PagerDuty PagerDutyConfig `mapstructure:"pagerduty"`
 	Oncall    OncallConfig    `mapstructure:"oncall"`
-	Page      PageConfig      `mapstructure:"page"`
 }
 
 type OmgConfig struct {
@@ -37,10 +36,6 @@ type OncallConfig struct {
 	DefaultQuery            string `mapstructure:"default_query"`
 	DefaultSchedule         string `mapstructure:"default_schedule"`
 	DefaultScheduleDuration string `mapstructure:"default_schedule_duration"`
-}
-
-type PageConfig struct {
-	Client string `mapstructure:"client"`
 }
 
 type PagerDutyConfig struct {

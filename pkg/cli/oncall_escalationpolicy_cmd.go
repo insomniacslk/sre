@@ -17,7 +17,7 @@ func NewOncallEscalationPolicyCmd(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:     "escalationpolicy",
 		Aliases: []string{"ep", "escalation-policy", "escalation_policy"},
-		Short:   "Show oncall information",
+		Short:   "Show escalation policy information",
 		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.Background()
