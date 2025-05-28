@@ -13,14 +13,12 @@ tools:
 omg:
   template: ~/.config/sre/omg.template
 
-schedule:
-  default_schedule: <your pagerduty schedule ID>
-  default_duration: 168h # how far in the future we want to see the schedule. In Go duration format
-
+# pagerduty configuration
 pagerduty:
   user_token: your_token_here
-  teams: your-pagerduty-team-name # if you want to use a team ID, prefix it with a "+"
+  teams: your-pagerduty-team-name
 
 oncall:
-  default_action: oncall
   default_query: your oncall schedule name
+  default_schedule: <your pagerduty schedule ID>
+  default_schedule_duration: 168h # how far in the future we want to see the schedule. In Go duration format

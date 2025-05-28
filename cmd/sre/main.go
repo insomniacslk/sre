@@ -26,7 +26,6 @@ func main() {
 		cli.NewOncallCmd(cfg),
 		cli.NewNotificationsCmd(cfg),
 		cli.NewIncidentsCmd(cfg),
-		cli.NewScheduleCmd(cfg),
 	)
 	if err != nil {
 		logrus.Fatalf("Failed to initialize root command: %v", err)
