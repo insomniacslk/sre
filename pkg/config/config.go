@@ -19,10 +19,31 @@ type OmgConfig struct {
 	Template string `mapstructure:"template"`
 }
 
+func (o *OmgConfig) Validate() error {
+	if o.Template == "" {
+		return fmt.Errorf("`omg.template` cannot be empty")
+	}
+	p, err := homedir.Expand(o.Template)
+	if err != nil {
+		return fmt.Errorf("faild to expand `omg.template` %q: %w", o.Template, err)
+	}
+	o.Template = p
+	return nil
+}
+
 type ToolsConfig []struct {
 	Name        string `mapstructure:"name"`
 	Description string `mapstructure:"description"`
 	URL         string `mapstructure:"url"`
+}
+
+func (t *ToolsConfig) Validate() error {
+	for idx, tool := range *t {
+		if tool.Name == "" {
+			return fmt.Errorf("missing tool name at index %d", idx)
+		}
+	}
+	return nil
 }
 
 type VpnConfig struct {
@@ -32,10 +53,20 @@ type VpnConfig struct {
 	PidFile         string              `mapstructure:"pid_file"`
 }
 
+func (v *VpnConfig) Validate() error {
+	// no validation at this stage
+	return nil
+}
+
 type OncallConfig struct {
 	DefaultQuery            string `mapstructure:"default_query"`
 	DefaultSchedule         string `mapstructure:"default_schedule"`
 	DefaultScheduleDuration string `mapstructure:"default_schedule_duration"`
+}
+
+func (o *OncallConfig) Validate() error {
+	// no validation at this stage
+	return nil
 }
 
 type PagerDutyConfig struct {
@@ -43,20 +74,29 @@ type PagerDutyConfig struct {
 	Teams     []string `mapstructure:"teams"`
 }
 
-func (c *Config) Validate() error {
-	// TODO move validation to the `omg` command
-	// validate `omg`
-	if c.Omg.Template == "" {
-		return fmt.Errorf("`omg.template` cannot be empty")
+func (p *PagerDutyConfig) Validate() error {
+	if p.UserToken == "" {
+		return fmt.Errorf("missing or empty `user_token`")
 	}
-	p, err := homedir.Expand(c.Omg.Template)
-	if err != nil {
-		return fmt.Errorf("faild to expand `omg.template` %q: %w", c.Omg.Template, err)
-	}
-	c.Omg.Template = p
+	return nil
+}
 
-	// validate `tools`
-	// nothing to do for now
+func (c *Config) Validate() error {
+	if err := c.Omg.Validate(); err != nil {
+		return fmt.Errorf("invalid `omg` config: %w", err)
+	}
+	if err := c.Tools.Validate(); err != nil {
+		return fmt.Errorf("invalid `tools` config: %w", err)
+	}
+	if err := c.Vpn.Validate(); err != nil {
+		return fmt.Errorf("invalid `vpn` config: %w", err)
+	}
+	if err := c.Oncall.Validate(); err != nil {
+		return fmt.Errorf("invalid `oncall` config: %w", err)
+	}
+	if err := c.PagerDuty.Validate(); err != nil {
+		return fmt.Errorf("invalid `oncall` config: %w", err)
+	}
 
 	return nil
 }
