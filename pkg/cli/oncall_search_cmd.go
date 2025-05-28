@@ -65,7 +65,7 @@ func NewOncallSearchCmd(cfg *config.Config) *cobra.Command {
 				}
 			}
 			fmt.Printf("Found %d schedules\n", len(oncallBySchedule))
-			idx := 0
+			idx := 1
 			for sched, oncalls := range oncallBySchedule {
 				schedURL := ""
 				if len(oncalls) > 0 {
