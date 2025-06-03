@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/insomniacslk/sre/pkg/config"
 
@@ -27,11 +28,13 @@ func InitConfig(progname string) (*config.Config, error) {
 	if flagDebug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
+	var configDir string
 	if configFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(configFile)
+		configDir = filepath.Dir(configFile)
 	} else {
-		configDir := configdir.LocalConfig(progname)
+		configDir = configdir.LocalConfig(progname)
 		logrus.Debugf("Searching for config file in directory %q", configDir)
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
@@ -53,6 +56,7 @@ func InitConfig(progname string) (*config.Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config: %v", err)
 	}
 	logrus.Debugf("Successfully unmarshalled config: %+v", cfg)
+	cfg.ConfigDir = configDir
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid config: %v", err)
 	}

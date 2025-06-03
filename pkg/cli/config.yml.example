@@ -22,3 +22,49 @@ oncall:
   default_query: your oncall schedule name
   default_schedule: <your pagerduty schedule ID>
   default_schedule_duration: 168h # how far in the future we want to see the schedule. In Go duration format
+
+oncall_generator:
+  // How long the schedule is generated for
+  schedule_duration: 28d
+  // The name of the yaml file containing the public holiday calendar broken down by year and country.
+  // Paths are relative to the config dir (the same where this file is located), unless specified
+  // as an absolute path.
+  //
+  // The file format for the public holiday calendar referenced by this directive is:
+  //
+  //   years:
+  //     2025:
+  //       country name:
+  //         - Jan 1
+  //         - June 2
+  //       other country name:
+  //         ...
+  //     2026:
+  //       ...
+  //
+  public_holiday_calendar_file: holiday_calendar.yaml 
+  members:
+    - name: Andrea Barberio
+      email: insomniac@example.org
+      constraints:
+        timezone: Europe/Rome
+        earliest_oncall_hour: 6
+        latest_oncall_hour: 23
+        public_holidays:
+	  # `country_name` must match a valid country from the file pointed by `public_holiday_calendar_file`
+	  country_name: Italy
+	  # if specified, `include_dates` indicates extra dates this person cannot be oncall on
+	  include_dates:
+            - 2025-04-25
+	  # if specified, `exclude_dates` indicates the dates this person can be oncall on, even if they are part of their country's public holidays
+	  exclude_dates:
+	    - 2025-08-15
+    - name: John Doe
+      email: john.doe@example.org
+      constraints:
+        timezone: America/Los_Angeles
+        earliest_oncall_hour: 6
+        latest_oncall_hour: 23
+        public_holidays:
+	  country_name: United States
+          - 2025-07-04

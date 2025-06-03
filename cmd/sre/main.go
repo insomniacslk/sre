@@ -19,6 +19,7 @@ func main() {
 	rootCmd, err := cli.WithSubcommands(
 		progname,
 		cli.NewConfigExampleCmd(cfg),
+		cli.NewShowConfigCmd(cfg),
 		cli.NewToolsCmd(cfg),
 		cli.NewOmgCmd(cfg),
 		cli.NewOmgTemplateCmd(cfg),
