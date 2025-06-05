@@ -24,9 +24,10 @@ const (
 )
 
 type OncallShift struct {
-	PersonID  string
-	StartTime time.Time
-	EndTime   time.Time
+	OncallPerson *config.OncallPerson
+	Name         string
+	StartTime    time.Time
+	EndTime      time.Time
 	// private fields
 	shiftID   string
 	shiftType ShiftType
@@ -93,10 +94,17 @@ loop:
 
 type OncallSchedule []OncallShift
 
+// ShiftCandidate is a struct containing potential candidates for a specific shift
+type ShiftCandidate struct {
+	Shift           *OncallShift
+	AvailablePeople []*config.OncallPerson
+}
+
 func GenerateSchedule(cfg *config.OncallGeneratorConfig) (*OncallShift, error) {
-	fmt.Printf("Desired shifts:\n")
+	logrus.Debugf("Desired shifts:\n")
+	shiftCandidates := make(map[string][]ShiftCandidate, len(cfg.Shifts))
 	for _, shift := range cfg.Shifts {
-		fmt.Printf("  %s\n    days: %v\n    start : %s\n    end   : %s\n", shift.Name, shift.Days, shift.StartTime, shift.EndTime)
+		logrus.Debugf("  %s\n    days: %v\n    start : %s\n    end   : %s\n", shift.Name, shift.Days, shift.StartTime, shift.EndTime)
 
 		// validate weekday strings
 		var weekdays []time.Weekday
@@ -164,7 +172,7 @@ func GenerateSchedule(cfg *config.OncallGeneratorConfig) (*OncallShift, error) {
 			}
 
 			shiftDays = append(shiftDays, OncallShift{
-				PersonID:  "",
+				Name:      shift.Name,
 				StartTime: shiftStart,
 				EndTime:   shiftEnd,
 			})
@@ -179,76 +187,98 @@ func GenerateSchedule(cfg *config.OncallGeneratorConfig) (*OncallShift, error) {
 			}
 			shiftsByID[d.ID()] = d
 		}
+		if _, ok := shiftCandidates[shift.Name]; !ok {
+			shiftCandidates[shift.Name] = make([]ShiftCandidate, 0)
+		}
 
 		// TODO generalize constraints (hard and soft)
 		// Create a mapping between the shift and the available people. The key is the output of OncallShift.ID()
-		availability := make(map[string][]config.OncallPerson, 0)
+		availability := make(map[string][]*config.OncallPerson, 0)
 
 		// check the first hard constraint: earliest/latest hours in the user's timezone
-		for _, member := range cfg.Members {
-			logrus.Debugf("Checking if %s can cover the shift %s\n", member.Name, shift.Name)
-			tz, err := time.LoadLocation(member.Constraints.Timezone)
-			if err != nil {
-				return nil, fmt.Errorf("invalid timezone %q for person %q: %w", member.Constraints.Timezone, member.Name, err)
-			}
-			// FIXME: this algorithm is inefficient
-			for _, shiftDay := range shiftDays {
+		// FIXME: this algorithm is inefficient
+		for _, shiftDay := range shiftDays {
+			availablePeople := make([]*config.OncallPerson, 0)
+			for _, member := range cfg.Members {
+				logrus.Debugf("Checking if %s can cover the shift %s\n", member.Name, shift.Name)
+				tz, err := time.LoadLocation(member.Constraints.Timezone)
+				if err != nil {
+					return nil, fmt.Errorf("invalid timezone %q for person %q: %w", member.Constraints.Timezone, member.Name, err)
+				}
 				// get shift day in the person's timezone
 				start := shiftDay.StartTime.In(tz)
 				end := shiftDay.EndTime.In(tz)
+				if member.Name == "Christopher Wade" && shift.Name == "weekend_noram" {
+					logrus.Infof("start: %s", start)
+					logrus.Infof("end  : %s", end)
+				}
 				if start.Hour() < end.Hour() {
 					// the shift is entirely contained in one day
 					if start.Hour() < int(member.Constraints.EarliestOncallHour) {
-						logrus.Debugf("Skipping person %q: shift starts too early in tz %s, want at least %d, got %d", member.Name, tz, member.Constraints.EarliestOncallHour, start.Hour())
+						logrus.Debugf("Skipping person %q for shift %q: shift starts too early in tz %s, want at least %d, got %d", member.Name, shift.Name, tz, member.Constraints.EarliestOncallHour, start.Hour())
 						continue
 					}
 					if end.Hour() > int(member.Constraints.LatestOncallHour) {
-						logrus.Debugf("Skipping person %q: shift ends too late in tz %s, want no later than %d, got %d", member.Name, tz, member.Constraints.LatestOncallHour, end.Hour())
+						logrus.Debugf("Skipping person %q for shift %q: shift ends too late in tz %s, want no later than %d, got %d", member.Name, shift.Name, tz, member.Constraints.LatestOncallHour, end.Hour())
 						continue
 					}
 				} else {
 					// the shift rolls over to the next day
 					if start.Hour() < int(member.Constraints.EarliestOncallHour) {
-						logrus.Debugf("Skipping person %q: shift starts too early in tz %s, want at least %d, got %d", member.Name, tz, member.Constraints.EarliestOncallHour, start.Hour())
+						logrus.Debugf("Skipping person %q for shift %q: shift starts too early in tz %s, want at least %d, got %d", member.Name, shift.Name, tz, member.Constraints.EarliestOncallHour, start.Hour())
 						continue
 					}
 					if end.Hour()+24 > int(member.Constraints.LatestOncallHour) {
-						logrus.Debugf("Skipping person %q: shift ends too late in tz %s, want no later than %d, got %d", member.Name, tz, member.Constraints.LatestOncallHour, end.Hour())
+						logrus.Debugf("Skipping person %q for shift %q: shift ends too late in tz %s, want no later than %d, got %d on the next day", member.Name, shift.Name, tz, member.Constraints.LatestOncallHour, end.Hour())
 						continue
 					}
 				}
-				availablePeople, ok := availability[shiftDay.ID()]
-				if !ok {
-					availablePeople = make([]config.OncallPerson, 0)
-				}
-				logrus.Infof("Added %s to shift %s", member.Name, shift.Name)
-				availability[shiftDay.ID()] = append(availablePeople, member)
+				availablePeople = append(availablePeople, &member)
+				logrus.Debugf("Added %s to shift %s", member.Name, shiftDay.Name)
 			}
+			availability[shiftDay.ID()] = availablePeople
+			shiftCandidate := ShiftCandidate{
+				Shift:           &shiftDay,
+				AvailablePeople: availablePeople,
+			}
+			shiftCandidates[shift.Name] = append(shiftCandidates[shift.Name], shiftCandidate)
 		}
 
 		// check the second constraint: public holidays. This is a soft constraint, there are cases where we simply don't
 		// have anyone available (e.g. Christmas in NORAM), so one person will get the lucky day anyway.
+		// TODO implement this
+		// TODO implement the remaining constraints
 
-		// Print availability for this shift
-		if len(availability) == 0 {
-			fmt.Printf("No availability for shift %s!\n", shift.Name)
+	}
+	// Print availability for the shifts
+	shiftsWithoutOncall := 0
+	for name, candidates := range shiftCandidates {
+		fmt.Printf("Shift availability for shift %s:\n", name)
+		if len(candidates) == 0 {
+			fmt.Printf("    WARNING: no available people for this shift\n")
+			shiftsWithoutOncall++
 			continue
 		}
-		fmt.Printf("Shift availability for %s:\n", shift.Name)
-		for shiftID, members := range availability {
-			shiftDay, ok := shiftsByID[shiftID]
-			if !ok {
-				logrus.Panicf("Shift with ID %q not found, this is probably a program bug", shiftID)
-			}
-			if len(members) == 0 {
-				fmt.Printf("No availability for shift %s in range %s through %s !\n", shift.Name, shiftDay.StartTime.Format(time.RFC822), shiftDay.EndTime.Format(time.RFC822))
+		for _, candidate := range candidates {
+			start, end := candidate.Shift.StartTime, candidate.Shift.EndTime
+			fmt.Printf("  - Time: %s through %s\n", start.In(time.UTC).Format(time.RFC822), end.In(time.UTC).Format(time.RFC822))
+			fmt.Printf("    Available people:\n")
+			if len(candidate.AvailablePeople) == 0 {
+				fmt.Printf("        WARNING: no available people for this shift day\n")
+				shiftsWithoutOncall++
 				continue
 			}
-			fmt.Printf("    Shift %s (%s through %s) can be covered by:\n", shift.Name, shiftDay.StartTime.Format(time.RFC822), shiftDay.EndTime.Format(time.RFC822))
-			for _, member := range members {
-				fmt.Printf("        %s <%s> %d to %d\n", member.Name, member.Email, member.Constraints.EarliestOncallHour, member.Constraints.LatestOncallHour)
+			for _, p := range candidate.AvailablePeople {
+				tz, err := time.LoadLocation(p.Constraints.Timezone)
+				if err != nil {
+					return nil, fmt.Errorf("invalid timezone %q for person %q: %w", p.Constraints.Timezone, p.Name, err)
+				}
+				fmt.Printf("        - %s <%s> from %s to %s\n", p.Name, p.Email, start.In(tz).Format(time.RFC822), end.In(tz).Format(time.RFC822))
 			}
 		}
+	}
+	if shiftsWithoutOncall > 0 {
+		fmt.Printf("WARNING: found %d shift(s) without available oncalls\n", shiftsWithoutOncall)
 	}
 	return nil, fmt.Errorf("schedule generation not implemented yet")
 }

@@ -73,22 +73,22 @@ func NewOncallGeneratorCmd(cfg *config.Config) *cobra.Command {
 			}
 
 			fmt.Printf("Generating oncall schedule for the next %s\n", dur)
-			fmt.Printf("Members:\n")
+			logrus.Debugf("Members:\n")
 			for idx, m := range cfg.OncallGenerator.Members {
-				fmt.Printf("%d) %s <%s>\n", idx+1, m.Name, m.Email)
-				fmt.Printf("    Constraints:\n")
-				fmt.Printf("    - timezone        : %s\n", m.Constraints.Timezone)
-				fmt.Printf("    - earliest hour   : %d\n", m.Constraints.EarliestOncallHour)
-				fmt.Printf("    - latest hour     : %d\n", m.Constraints.LatestOncallHour)
-				fmt.Printf("    - public holidays :\n")
-				fmt.Printf("            country name: %s\n", m.Constraints.PublicHolidays.CountryName)
-				fmt.Printf("            include_dates:\n")
+				logrus.Debugf("%d) %s <%s>\n", idx+1, m.Name, m.Email)
+				logrus.Debugf("    Constraints:\n")
+				logrus.Debugf("    - timezone        : %s\n", m.Constraints.Timezone)
+				logrus.Debugf("    - earliest hour   : %d\n", m.Constraints.EarliestOncallHour)
+				logrus.Debugf("    - latest hour     : %d\n", m.Constraints.LatestOncallHour)
+				logrus.Debugf("    - public holidays :\n")
+				logrus.Debugf("            country name: %s\n", m.Constraints.PublicHolidays.CountryName)
+				logrus.Debugf("            include_dates:\n")
 				for _, h := range m.Constraints.PublicHolidays.IncludeDates {
-					fmt.Printf("            - %s\n", h.Format("2006-01-02"))
+					logrus.Debugf("            - %s\n", h.Format("2006-01-02"))
 				}
-				fmt.Printf("            exclude_dates:\n")
+				logrus.Debugf("            exclude_dates:\n")
 				for _, h := range m.Constraints.PublicHolidays.ExcludeDates {
-					fmt.Printf("            - %s\n", h.Format("2006-01-02"))
+					logrus.Debugf("            - %s\n", h.Format("2006-01-02"))
 				}
 			}
 			schedule, err := GenerateSchedule(&cfg.OncallGenerator)
