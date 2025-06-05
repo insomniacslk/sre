@@ -24,24 +24,38 @@ oncall:
   default_schedule_duration: 168h # how far in the future we want to see the schedule. In Go duration format
 
 oncall_generator:
-  // How long the schedule is generated for
+  # How long the schedule is generated for
   schedule_duration: 28d
-  // The name of the yaml file containing the public holiday calendar broken down by year and country.
-  // Paths are relative to the config dir (the same where this file is located), unless specified
-  // as an absolute path.
-  //
-  // The file format for the public holiday calendar referenced by this directive is:
-  //
-  //   years:
-  //     2025:
-  //       country name:
-  //         - Jan 1
-  //         - June 2
-  //       other country name:
-  //         ...
-  //     2026:
-  //       ...
-  //
+
+  
+  # The desired shifts. Specify which days they occur on, and the start and end times.
+  # Start and end time should be in UTC to ensure that there are no gap hours without
+  # coverage, unless you explicitly need to do otherwise.
+  shifts:
+    - name: weekend_emea_apac
+      days: [sat, sun]
+      start_time: 5:00 UTC
+      end_time: 17:00 UTC
+    - name: weekend_noram
+      days: [sat, sun]
+      start_time: 17:00 UTC
+      end_time: 5:00 UTC
+
+  # The name of the yaml file containing the public holiday calendar broken down by year and country.
+  # Paths are relative to the config dir (the same where this file is located), unless specified
+  # as an absolute path.
+  #
+  # The file format for the public holiday calendar referenced by this directive is:
+  #
+  #   years:
+  #     2025:
+  #       country name:
+  #         - Jan 1
+  #         - June 2
+  #       other country name:
+  #         ...
+  #     2026:
+  #       ...
   public_holiday_calendar_file: holiday_calendar.yaml 
   members:
     - name: Andrea Barberio
@@ -49,7 +63,7 @@ oncall_generator:
       constraints:
         timezone: Europe/Rome
         earliest_oncall_hour: 6
-        latest_oncall_hour: 23
+        latest_oncall_hour: 20
         public_holidays:
 	  # `country_name` must match a valid country from the file pointed by `public_holiday_calendar_file`
 	  country_name: Italy
@@ -64,7 +78,7 @@ oncall_generator:
       constraints:
         timezone: America/Los_Angeles
         earliest_oncall_hour: 6
-        latest_oncall_hour: 23
+        latest_oncall_hour: 20
         public_holidays:
 	  country_name: United States
           - 2025-07-04

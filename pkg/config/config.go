@@ -88,23 +88,31 @@ func (p *PagerDutyConfig) Validate(cfg *Config) error {
 	return nil
 }
 
+type OncallPerson struct {
+	Name        string `mapstructure:"name"`
+	Email       string `mapstructure:"email"`
+	Constraints struct {
+		Timezone           string `mapstructure:"timezone"`
+		EarliestOncallHour uint   `mapstructure:"earliest_oncall_hour"`
+		LatestOncallHour   uint   `mapstructure:"latest_oncall_hour"`
+		PublicHolidays     struct {
+			CountryName  string      `mapstructure:"country_name"`
+			IncludeDates []time.Time `mapstructure:"include_dates"`
+			ExcludeDates []time.Time `mapstructure:"exclude_dates"`
+		} `mapstructure:"public_holidays"`
+	} `mapstructure:"constraints"`
+}
+
 type OncallGeneratorConfig struct {
 	ScheduleDuration          string `mapstructure:"schedule_duration"`
 	PublicHolidayCalendarFile string `mapstructure:"public_holiday_calendar_file"`
-	Members                   []struct {
-		Name        string `mapstructure:"name"`
-		Email       string `mapstructure:"email"`
-		Constraints struct {
-			Timezone           string `mapstructure:"timezone"`
-			EarliestOncallHour uint   `mapstructure:"earliest_oncall_hour"`
-			LatestOncallHour   uint   `mapstructure:"latest_oncall_hour"`
-			PublicHolidays     struct {
-				CountryName  string      `mapstructure:"country_name"`
-				IncludeDates []time.Time `mapstructure:"include_dates"`
-				ExcludeDates []time.Time `mapstructure:"exclude_dates"`
-			} `mapstructure:"public_holidays"`
-		} `mapstructure:"constraints"`
-	} `mapstructure:"members"`
+	Shifts                    []struct {
+		Name      string   `mapstructure:"name"`
+		Days      []string `mapstructure:"days"`
+		StartTime string   `mapstructure:"start_time"`
+		EndTime   string   `mapstructure:"end_time"`
+	} `mapstructure:"shifts"`
+	Members []OncallPerson `mapstructure:"members"`
 }
 
 func (o *OncallGeneratorConfig) Validate(cfg *Config) error {
@@ -119,6 +127,7 @@ func (o *OncallGeneratorConfig) Validate(cfg *Config) error {
 		cf = filepath.Join(cfg.ConfigDir, cf)
 	}
 	o.PublicHolidayCalendarFile = cf
+	// TODO validate Shifts
 	for idx, m := range o.Members {
 		if m.Name == "" {
 			return fmt.Errorf("empty or missing member name at index %d", idx)

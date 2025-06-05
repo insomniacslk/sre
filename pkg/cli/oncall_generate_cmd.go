@@ -91,6 +91,11 @@ func NewOncallGeneratorCmd(cfg *config.Config) *cobra.Command {
 					fmt.Printf("            - %s\n", h.Format("2006-01-02"))
 				}
 			}
+			schedule, err := GenerateSchedule(&cfg.OncallGenerator)
+			if err != nil {
+				logrus.Errorf("Failed to generate schedule: %v", err)
+			}
+			fmt.Printf("Generated schedule: %+v\n", schedule)
 
 			/*
 				ctx := context.Background()
