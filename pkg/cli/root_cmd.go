@@ -18,7 +18,7 @@ func InitRootCmd(progname string) {
 			Run:   nil,
 		}
 		rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuration file")
-		rootCmd.PersistentFlags().BoolVarP(&flagDebug, "debug", "d", false, "Print debug messages")
+		rootCmd.PersistentFlags().BoolVarP(&flagDebug, "debug", "D", false, "Print debug messages")
 		globalRootCmd = rootCmd
 	}
 }

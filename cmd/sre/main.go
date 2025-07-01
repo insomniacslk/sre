@@ -24,7 +24,7 @@ func main() {
 		cli.NewOmgCmd(cfg),
 		cli.NewOmgTemplateCmd(cfg),
 		cli.NewVpnCmd(cfg),
-		cli.NewOncallCmd(cfg),
+		cli.OncallCmd,
 		cli.NewNotificationsCmd(cfg),
 		cli.NewIncidentsCmd(cfg),
 	)
