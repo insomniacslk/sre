@@ -16,6 +16,7 @@ func NewVpnCmd(cfg *config.Config) *cobra.Command {
 		Short: "Connect and disconnect from VPN using OpenConnect",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			logrus.Debugf("Running vpn command")
 			v, err := vpn.NewVpn(&cfg.Vpn)
 			if err != nil {
 				logrus.Fatalf("Failed to get VPN: %v", err)

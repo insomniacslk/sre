@@ -21,6 +21,7 @@ func NewIncidentsCmd(cfg *config.Config) *cobra.Command {
 		Short: "Show incidents via the oncall tool (PagerDuty)",
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			logrus.Debugf("Running incidents command")
 			now := time.Now()
 			start := now.Add(-time.Hour)
 			end := now

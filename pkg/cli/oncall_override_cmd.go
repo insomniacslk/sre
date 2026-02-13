@@ -53,6 +53,7 @@ var OncallOverrideCmd = &cobra.Command{
 	Short:   "Create an override in the oncall schedule (PagerDuty)",
 	Args:    cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logrus.Debugf("Running override command")
 		ctx := context.Background()
 		cfg, err := GetConfig()
 		if err != nil {

@@ -21,6 +21,7 @@ var OncallUserCmd = &cobra.Command{
 	Short:   "Show user information",
 	Args:    cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logrus.Debugf("Running user command")
 		ctx := context.Background()
 		cfg, err := GetConfig()
 		if err != nil {

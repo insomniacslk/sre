@@ -27,6 +27,7 @@ var OncallScheduleCmd = &cobra.Command{
 	Short:   "Show the schedule of a given oncall (PagerDuty)",
 	Args:    cobra.MinimumNArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logrus.Debugf("Running oncall schedule command")
 		ctx := context.Background()
 		cfg, err := GetConfig()
 		if err != nil {

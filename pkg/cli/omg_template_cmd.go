@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/insomniacslk/sre/pkg/config"
+	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
@@ -17,6 +18,7 @@ func NewOmgTemplateCmd(cfg *config.Config) *cobra.Command {
 		Use:   "omg-template-example",
 		Short: "Print an example omg.template file",
 		Run: func(cmd *cobra.Command, args []string) {
+			logrus.Debugf("Running omg-template-example command")
 			fmt.Println(omgTemplateExample)
 		},
 	}

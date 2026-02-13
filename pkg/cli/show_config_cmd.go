@@ -18,6 +18,7 @@ func NewShowConfigCmd(cfg *config.Config) *cobra.Command {
 		Aliases: []string{"config", "sc"},
 		Short:   "Print the current configuration",
 		Run: func(cmd *cobra.Command, args []string) {
+			logrus.Debugf("Running show-config command")
 			output, err := yaml.Marshal(cfg)
 			if err != nil {
 				logrus.Fatalf("Failed to marshal config to YAML: %v", err)

@@ -39,6 +39,7 @@ func NewNotificationsCmd(cfg *config.Config) *cobra.Command {
 		Short: "Show notificationss via the oncall tool (PagerDuty)",
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			logrus.Debugf("Running notifications command")
 			now := time.Now()
 			start := now.Add(-time.Hour)
 			end := now

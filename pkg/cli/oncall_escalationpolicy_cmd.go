@@ -22,6 +22,7 @@ var OncallEscalationPolicyCmd = &cobra.Command{
 	Short:   "Show escalation policy information",
 	Args:    cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logrus.Debugf("Running escalationpolicy command")
 		ctx := context.Background()
 		cfg, err := GetConfig()
 		if err != nil {

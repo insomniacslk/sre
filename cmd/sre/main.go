@@ -11,7 +11,6 @@ import (
 const progname = "sre"
 
 func main() {
-	//	cobra.OnInitialize(cli.InitConfig(progname))
 	cfg, err := cli.InitConfig(progname)
 	if err != nil {
 		logrus.Fatalf("Failed to get configuration: %v", err)

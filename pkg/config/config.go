@@ -6,11 +6,30 @@ import (
 	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/sirupsen/logrus"
 	"github.com/xhit/go-str2duration/v2"
 )
 
+var (
+	LogLevels       []string
+	DefaultLogLevel string
+)
+
+func init() {
+	// build list of log level strings
+	logrusLogLevels := make([]string, 0, len(logrus.AllLevels))
+	for _, l := range logrus.AllLevels {
+		ls, _ := l.MarshalText()
+		logrusLogLevels = append(logrusLogLevels, string(ls))
+	}
+	LogLevels = logrusLogLevels
+	mll, _ := logrus.InfoLevel.MarshalText()
+	DefaultLogLevel = string(mll)
+}
+
 type Config struct {
 	Timezone        string                `mapstructure:"timezone"`
+	LogLevel        string                `mapstructure:"loglevel"`
 	Omg             OmgConfig             `mapstructure:"omg"`
 	Tools           ToolsConfig           `mapstructure:"tools"`
 	Vpn             VpnConfig             `mapstructure:"vpn"`

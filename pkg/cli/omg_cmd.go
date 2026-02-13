@@ -23,6 +23,7 @@ func NewOmgCmd(cfg *config.Config) *cobra.Command {
 		Short: "First-responder tool",
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
+			logrus.Debugf("Running omg command")
 			templateFile := cfg.Omg.Template
 			templateBytes, err := os.ReadFile(templateFile)
 			if err != nil {

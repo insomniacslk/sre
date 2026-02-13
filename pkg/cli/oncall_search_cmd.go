@@ -22,6 +22,7 @@ var OncallSearchCmd = &cobra.Command{
 	Short:   "Search oncall schedule information",
 	Args:    cobra.MinimumNArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logrus.Debugf("Running search command")
 		ctx := context.Background()
 		cfg, err := GetConfig()
 		if err != nil {

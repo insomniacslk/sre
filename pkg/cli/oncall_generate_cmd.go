@@ -59,6 +59,7 @@ var OncallGeneratorCmd = &cobra.Command{
 	Short:   "Generate oncall schedule",
 	Args:    cobra.MinimumNArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logrus.Debugf("Running weekendgenerator command")
 		cfg, err := GetConfig()
 		if err != nil {
 			return err

@@ -5,6 +5,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/insomniacslk/sre/pkg/config"
 )
 
 var globalRootCmd *cobra.Command
@@ -17,17 +19,38 @@ func InitRootCmd(progname string) {
 			Long:  fmt.Sprintf("%s is the uber-CLI for an SRE team. It includes subcommands that help with incident response, documentation, oncall, and much more", progname),
 			Args:  cobra.MinimumNArgs(1),
 			Run:   nil,
+			PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+				cfg, err := GetConfig()
+				if err != nil {
+					return fmt.Errorf("failed to get config: %w", err)
+				}
+				// override log level if set via command line.
+				// If not set, use the one from config file, and if that one is not set either, use the default
+				logLevel := config.DefaultLogLevel
+				changed := cmd.Flags().Changed("log-level")
+				if changed {
+					lls, err := cmd.Flags().GetString("log-level")
+					if err != nil {
+						return fmt.Errorf("failed to get string value for --log-level: %w", err)
+					}
+					logLevel = lls
+				} else {
+					if cfg.LogLevel != "" {
+						logLevel = cfg.LogLevel
+					} else {
+						logLevel = config.DefaultLogLevel
+					}
+				}
+				ll, err := logrus.ParseLevel(logLevel)
+				if err != nil {
+					return fmt.Errorf("invalid log level %q passed via command line: %w", logLevel, err)
+				}
+				logrus.SetLevel(ll)
+				return nil
+			},
 		}
-		// build list of log level strings
-		logrusLogLevels := make([]string, 0, len(logrus.AllLevels))
-		for _, l := range logrus.AllLevels {
-			ls, _ := l.MarshalText()
-			logrusLogLevels = append(logrusLogLevels, string(ls))
-		}
-		mll, _ := logrus.InfoLevel.MarshalText()
-		defaultLogLevel := string(mll)
 		rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuration file")
-		rootCmd.PersistentFlags().StringVarP(&flagLogLevel, "log-level", "L", defaultLogLevel, fmt.Sprintf("Set log level. One of %v", logrusLogLevels))
+		rootCmd.PersistentFlags().StringVarP(&flagLogLevel, "log-level", "L", config.DefaultLogLevel, fmt.Sprintf("Set log level. One of %v", config.LogLevels))
 		globalRootCmd = rootCmd
 	}
 }
