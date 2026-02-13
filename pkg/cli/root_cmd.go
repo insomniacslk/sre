@@ -46,6 +46,7 @@ func InitRootCmd(progname string) {
 					return fmt.Errorf("invalid log level %q passed via command line: %w", logLevel, err)
 				}
 				logrus.SetLevel(ll)
+				cfg.LogLevelValue = ll
 				return nil
 			},
 		}

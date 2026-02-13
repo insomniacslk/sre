@@ -37,8 +37,9 @@ type Config struct {
 	Oncall          OncallConfig          `mapstructure:"oncall"`
 	OncallGenerator OncallGeneratorConfig `mapstructure:"oncall_generator"`
 
-	// this field is not coming from the config file and is set from the outside
-	ConfigDir string `mapstructure:"-"`
+	// these fields are not coming from the config file and are set from the outside
+	ConfigDir     string       `mapstructure:"-"`
+	LogLevelValue logrus.Level `mapstructure:"-"`
 }
 
 type OmgConfig struct {
