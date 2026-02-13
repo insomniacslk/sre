@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -17,8 +18,16 @@ func InitRootCmd(progname string) {
 			Args:  cobra.MinimumNArgs(1),
 			Run:   nil,
 		}
+		// build list of log level strings
+		logrusLogLevels := make([]string, 0, len(logrus.AllLevels))
+		for _, l := range logrus.AllLevels {
+			ls, _ := l.MarshalText()
+			logrusLogLevels = append(logrusLogLevels, string(ls))
+		}
+		mll, _ := logrus.InfoLevel.MarshalText()
+		defaultLogLevel := string(mll)
 		rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuration file")
-		rootCmd.PersistentFlags().BoolVarP(&flagDebug, "debug", "D", false, "Print debug messages")
+		rootCmd.PersistentFlags().StringVarP(&flagLogLevel, "log-level", "L", defaultLogLevel, fmt.Sprintf("Set log level. One of %v", logrusLogLevels))
 		globalRootCmd = rootCmd
 	}
 }

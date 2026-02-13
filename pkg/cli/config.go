@@ -14,7 +14,7 @@ import (
 var (
 	globalConfig *config.Config
 	configFile   string
-	flagDebug    bool
+	flagLogLevel string
 )
 
 func GetConfig() (*config.Config, error) {
@@ -25,9 +25,8 @@ func GetConfig() (*config.Config, error) {
 }
 
 func InitConfig(progname string) (*config.Config, error) {
-	if flagDebug {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
+	logLevel, _ := logrus.ParseLevel(flagLogLevel)
+	logrus.SetLevel(logLevel)
 	var configDir string
 	if configFile != "" {
 		// Use config file from the flag.
