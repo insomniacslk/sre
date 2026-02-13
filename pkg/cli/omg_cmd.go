@@ -55,7 +55,11 @@ func NewOmgCmd(cfg *config.Config) *cobra.Command {
 					if err != nil {
 						return nil, err
 					}
-					defer resp.Body.Close()
+					defer func() {
+						if err := resp.Body.Close(); err != nil {
+							logrus.Warningf("Failed to close response body: %v", err)
+						}
+					}()
 					if resp.StatusCode != 200 {
 						return nil, fmt.Errorf("expected 200 OK, got %s", resp.Status)
 					}

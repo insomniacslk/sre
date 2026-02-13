@@ -13,5 +13,3 @@ A command line tool to help SREs (Site Reliability Engineers) do their job.
 | `incidents`     | Print incidents using PagerDuty's API | Basic implementation | Currently printing all the incidents that PagerDuty reports |
 | `notifications` | Print notifications using PagerDuty's API | Basic implementation | Currently just printing all notifications reported by PagerDuty |
 | `vpn`           | Connect to user-defined VPNs | Not implemented yet | Planning to support only Cisco AnyConnect through OpenConnect |
-
-

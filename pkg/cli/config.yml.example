@@ -42,7 +42,7 @@ oncall_generator:
   //     2026:
   //       ...
   //
-  public_holiday_calendar_file: holiday_calendar.yaml 
+  public_holiday_calendar_file: holiday_calendar.yaml
   members:
     - name: Andrea Barberio
       email: insomniac@example.org

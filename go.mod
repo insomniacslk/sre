@@ -1,6 +1,6 @@
 module github.com/insomniacslk/sre
 
-go 1.22.0
+go 1.24.0
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.8.0
@@ -12,6 +12,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/xhit/go-str2duration/v2 v2.1.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -40,5 +41,4 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

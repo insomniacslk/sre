@@ -151,7 +151,8 @@ var OncallOverrideCmd = &cobra.Command{
 
 		// check that this user isn't already oncall at that time
 		if len(currentOncalls) == 1 && currentOncalls[0].ID == user.ID {
-			fmt.Printf(ansi.Bold(fmt.Sprintf("The user %s <%s> is already oncall at that time, aborting\n", user.Name, user.Email)))
+			str := ansi.Bold(fmt.Sprintf("The user %s <%s> is already oncall at that time, aborting\n", user.Name, user.Email))
+			fmt.Print(str)
 			os.Exit(1)
 		}
 
@@ -180,7 +181,7 @@ var OncallOverrideCmd = &cobra.Command{
 		}
 		_, err = client.CreateOverrideWithContext(ctx, scheduleID, override)
 		if err != nil {
-			return fmt.Errorf("Override creation failed: %w", err)
+			return fmt.Errorf("override creation failed: %w", err)
 		}
 		fmt.Printf("Override created\n")
 

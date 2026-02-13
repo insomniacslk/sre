@@ -26,7 +26,7 @@ func InitRootCmd(progname string) {
 				}
 				// override log level if set via command line.
 				// If not set, use the one from config file, and if that one is not set either, use the default
-				logLevel := config.DefaultLogLevel
+				var logLevel string
 				changed := cmd.Flags().Changed("log-level")
 				if changed {
 					lls, err := cmd.Flags().GetString("log-level")
