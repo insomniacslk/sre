@@ -77,8 +77,8 @@ func NewIncidentsCmd(cfg *config.Config) *cobra.Command {
 				logrus.Fatalf("No teams found")
 			}
 			opts := pagerduty.ListIncidentsOptions{
-				Since:   start.String(),
-				Until:   end.String(),
+				Since:   start.Format(time.RFC3339),
+				Until:   end.Format(time.RFC3339),
 				Limit:   100, // 100 is the maximum allowed by PagerDuty's API
 				TeamIDs: teamIDs,
 			}

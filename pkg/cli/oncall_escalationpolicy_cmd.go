@@ -76,8 +76,8 @@ var OncallEscalationPolicyCmd = &cobra.Command{
 					pastHour := now.Add(-time.Hour)
 					nextHour := now.Add(time.Hour)
 					oopts := pagerduty.ListOnCallUsersOptions{
-						Since: pastHour.String(),
-						Until: now.String(),
+						Since: pastHour.Format(time.RFC3339),
+						Until: now.Format(time.RFC3339),
 					}
 					// FIXME this approach is not great. I get the
 					// oncalls for the past hour, and for the next hour,
@@ -93,7 +93,7 @@ var OncallEscalationPolicyCmd = &cobra.Command{
 							}
 							user, err = client.GetUserWithContext(ctx, t.ID, opts)
 							if err != nil {
-								logrus.Fatalf("Failed to get escalation policies: %v", err)
+								logrus.Fatalf("Failed to get user: %v", err)
 							}
 							users[user.ID] = user
 						}
@@ -103,8 +103,8 @@ var OncallEscalationPolicyCmd = &cobra.Command{
 						if err != nil {
 							logrus.Warningf("Failed to get users for schedule %s, skipping. Error was: %v", t.Summary, err)
 						}
-						oopts.Since = now.String()
-						oopts.Until = nextHour.String()
+						oopts.Since = now.Format(time.RFC3339)
+						oopts.Until = nextHour.Format(time.RFC3339)
 						nextOncalls, err := client.ListOnCallUsersWithContext(ctx, t.ID, oopts)
 						if err != nil {
 							logrus.Warningf("Failed to get users for schedule %s (ID: %s), skipping. Error was: %v", t.Summary, t.ID, err)

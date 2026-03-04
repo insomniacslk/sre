@@ -25,9 +25,9 @@ var (
 
 func init() {
 	OncallCmd.AddCommand(OncallOverrideCmd)
-	OncallOverrideCmd.PersistentFlags().StringVarP(&flagOncallOverrideStart, "start-time", "s", "", "Start time of the override. Accepted formats: RFC3999, RFC3999Nano, RFC822, RFC822Z, Unix time")
+	OncallOverrideCmd.PersistentFlags().StringVarP(&flagOncallOverrideStart, "start-time", "s", "", "Start time of the override. Accepted formats: RFC3339, RFC3339Nano, RFC822, RFC822Z, Unix time")
 	OncallOverrideCmd.PersistentFlags().StringVarP(&flagOncallOverrideEnd, "end-time", "e", "", "End time of the override. Accepted formats: RFC3339, RFC3339Nano, RFC822, RFC822Z, Unix time")
-	OncallOverrideCmd.PersistentFlags().BoolVarP(&flagOncallOverrideYes, "yes", "y", false, "Do not ask for confirmation before creating the overrride")
+	OncallOverrideCmd.PersistentFlags().BoolVarP(&flagOncallOverrideYes, "yes", "y", false, "Do not ask for confirmation before creating the override")
 }
 
 func parseOverrideTimeString(s string) (*time.Time, error) {
@@ -88,7 +88,7 @@ var OncallOverrideCmd = &cobra.Command{
 			scheduleID = args[1]
 		}
 		if scheduleID == "" {
-			logrus.Fatalf("No schedule ID specified")
+			return fmt.Errorf("no schedule ID specified")
 		}
 
 		// search for the specified user

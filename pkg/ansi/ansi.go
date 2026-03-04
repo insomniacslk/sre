@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"image"
-	"log"
 	"os"
 
 	"github.com/fatih/color"
@@ -41,7 +40,7 @@ func ToAnsiImage(img []byte) (string, error) {
 
 	ansi, err := img2ansi.RenderTrueColor(i)
 	if err != nil {
-		log.Fatalf("Error converting image to ANSI: %v", err)
+		return "", fmt.Errorf("error converting image to ANSI: %w", err)
 	}
 	return ansi, nil
 }

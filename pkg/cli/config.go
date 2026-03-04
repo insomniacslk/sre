@@ -44,18 +44,19 @@ func InitConfig(progname string) (*config.Config, error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			logrus.Warningf("Config file not found, using an empty one. Run the `config-example` subcommand for an example config")
 			// return an empty config
-			return &cfg, nil
+			globalConfig = &cfg
+			return globalConfig, nil
 		} else {
 			return nil, fmt.Errorf("failed to read config file: %w", err)
 		}
 	}
 	if err := viper.Unmarshal(&cfg); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 	logrus.Debugf("Successfully unmarshalled config: %+v", cfg)
 	cfg.ConfigDir = configDir
 	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid config: %v", err)
+		return nil, fmt.Errorf("invalid config: %w", err)
 	}
 	logrus.Debugf("Configuration validated successfully")
 	globalConfig = &cfg

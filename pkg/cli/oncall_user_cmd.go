@@ -30,7 +30,7 @@ var OncallUserCmd = &cobra.Command{
 		client := pagerduty.NewClient(cfg.PagerDuty.UserToken)
 
 		// search for a user
-		query := strings.Join(args, " ")[1:]
+		query := strings.Join(args, " ")
 		separator := strings.Repeat("-", 80)
 		opts := pagerduty.ListUsersOptions{
 			Query:    query,
@@ -38,7 +38,7 @@ var OncallUserCmd = &cobra.Command{
 		}
 		resp, err := client.ListUsersWithContext(ctx, opts)
 		if err != nil {
-			logrus.Fatalf("Failed to get escalation policies: %v", err)
+			logrus.Fatalf("Failed to list users: %v", err)
 		}
 		for _, u := range resp.Users {
 			fmt.Printf(ansi.Bold("Name      :")+" %s\n", u.Name)

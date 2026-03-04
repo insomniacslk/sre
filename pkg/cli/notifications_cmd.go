@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/insomniacslk/sre/pkg/ansi"
@@ -36,43 +35,43 @@ func pagerParseTime(s string) (*time.Time, error) {
 func NewNotificationsCmd(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "notifications",
-		Short: "Show notificationss via the oncall tool (PagerDuty)",
+		Short: "Show notifications via the oncall tool (PagerDuty)",
 		Args:  cobra.MinimumNArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			logrus.Debugf("Running notifications command")
 			now := time.Now()
 			start := now.Add(-time.Hour)
 			end := now
 			loc, err := time.LoadLocation(cfg.Timezone)
 			if err != nil {
-				log.Fatalf("Cannot load timezone %q: %v", cfg.Timezone, err)
+				return fmt.Errorf("cannot load timezone %q: %w", cfg.Timezone, err)
 			}
 			if len(args) > 0 {
 				t, err := pagerParseTime(args[0])
 				if err != nil {
-					logrus.Fatalf("Failed to parse start time: %v", err)
+					return fmt.Errorf("failed to parse start time: %w", err)
 				}
 				start = *t
 			}
 			if len(args) > 1 {
 				t, err := pagerParseTime(args[1])
 				if err != nil {
-					logrus.Fatalf("Failed to parse start time: %v", err)
+					return fmt.Errorf("failed to parse end time: %w", err)
 				}
 				end = *t
 			}
 			ctx := context.Background()
 			client := pagerduty.NewClient(cfg.PagerDuty.UserToken)
 			opts := pagerduty.ListNotificationOptions{
-				Since: start.String(),
-				Until: end.String(),
+				Since: start.Format(time.RFC3339),
+				Until: end.Format(time.RFC3339),
 				Limit: 100, // 100 is the maximum allowed by PagerDuty's API
 			}
 			allNotifications := make([]pagerduty.Notification, 0)
 			for {
 				resp, err := client.ListNotificationsWithContext(ctx, opts)
 				if err != nil {
-					logrus.Fatalf("Failed to list notifications: %v", err)
+					return fmt.Errorf("failed to list notifications: %w", err)
 				}
 				allNotifications = append(allNotifications, resp.Notifications...)
 				if !resp.More {
@@ -83,7 +82,7 @@ func NewNotificationsCmd(cfg *config.Config) *cobra.Command {
 			for _, n := range allNotifications {
 				startedAt, err := pagerParseTime(n.StartedAt)
 				if err != nil {
-					logrus.Fatalf("Failed to parse time string %q: %v", n.StartedAt, err)
+					return fmt.Errorf("failed to parse time string %q: %w", n.StartedAt, err)
 				}
 				start := startedAt.In(loc)
 				switch n.Type {
@@ -101,6 +100,7 @@ func NewNotificationsCmd(cfg *config.Config) *cobra.Command {
 				}
 			}
 			fmt.Printf("Found %d notifications between %s and %s", len(allNotifications), start, end)
+			return nil
 		},
 	}
 }

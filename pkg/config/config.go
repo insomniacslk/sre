@@ -52,7 +52,7 @@ func (o *OmgConfig) Validate(cfg *Config) error {
 	}
 	p, err := homedir.Expand(o.Template)
 	if err != nil {
-		return fmt.Errorf("faild to expand `omg.template` %q: %w", o.Template, err)
+		return fmt.Errorf("failed to expand `omg.template` %q: %w", o.Template, err)
 	}
 	o.Template = p
 	return nil
@@ -133,7 +133,7 @@ func (o *OncallGeneratorConfig) Validate(cfg *Config) error {
 	}
 	cf, err := homedir.Expand(o.PublicHolidayCalendarFile)
 	if err != nil {
-		return fmt.Errorf("failed to expand public_holiday_calendar_file path: %v", err)
+		return fmt.Errorf("failed to expand public_holiday_calendar_file path: %w", err)
 	}
 	if !filepath.IsAbs(cf) {
 		cf = filepath.Join(cfg.ConfigDir, cf)
@@ -167,7 +167,7 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("invalid `oncall` config: %w", err)
 	}
 	if err := c.PagerDuty.Validate(c); err != nil {
-		return fmt.Errorf("invalid `oncall` config: %w", err)
+		return fmt.Errorf("invalid `pagerduty` config: %w", err)
 	}
 	if err := c.OncallGenerator.Validate(c); err != nil {
 		return fmt.Errorf("invalid `oncall_generator` config: %w", err)
