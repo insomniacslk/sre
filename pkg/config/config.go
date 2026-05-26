@@ -2,12 +2,9 @@ package config
 
 import (
 	"fmt"
-	"path/filepath"
-	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
-	"github.com/xhit/go-str2duration/v2"
 )
 
 var (
@@ -35,7 +32,6 @@ type Config struct {
 	Vpn             VpnConfig             `mapstructure:"vpn"`
 	PagerDuty       PagerDutyConfig       `mapstructure:"pagerduty"`
 	Oncall          OncallConfig          `mapstructure:"oncall"`
-	OncallGenerator OncallGeneratorConfig `mapstructure:"oncall_generator"`
 
 	// these fields are not coming from the config file and are set from the outside
 	ConfigDir     string       `mapstructure:"-"`
@@ -108,51 +104,6 @@ func (p *PagerDutyConfig) Validate(cfg *Config) error {
 	return nil
 }
 
-type OncallGeneratorConfig struct {
-	ScheduleDuration          string `mapstructure:"schedule_duration"`
-	PublicHolidayCalendarFile string `mapstructure:"public_holiday_calendar_file"`
-	Members                   []struct {
-		Name        string `mapstructure:"name"`
-		Email       string `mapstructure:"email"`
-		Constraints struct {
-			Timezone           string `mapstructure:"timezone"`
-			EarliestOncallHour uint   `mapstructure:"earliest_oncall_hour"`
-			LatestOncallHour   uint   `mapstructure:"latest_oncall_hour"`
-			PublicHolidays     struct {
-				CountryName  string      `mapstructure:"country_name"`
-				IncludeDates []time.Time `mapstructure:"include_dates"`
-				ExcludeDates []time.Time `mapstructure:"exclude_dates"`
-			} `mapstructure:"public_holidays"`
-		} `mapstructure:"constraints"`
-	} `mapstructure:"members"`
-}
-
-func (o *OncallGeneratorConfig) Validate(cfg *Config) error {
-	if _, err := str2duration.ParseDuration(o.ScheduleDuration); err != nil {
-		return fmt.Errorf("invalid schedule_duration: %w", err)
-	}
-	cf, err := homedir.Expand(o.PublicHolidayCalendarFile)
-	if err != nil {
-		return fmt.Errorf("failed to expand public_holiday_calendar_file path: %w", err)
-	}
-	if !filepath.IsAbs(cf) {
-		cf = filepath.Join(cfg.ConfigDir, cf)
-	}
-	o.PublicHolidayCalendarFile = cf
-	for idx, m := range o.Members {
-		if m.Name == "" {
-			return fmt.Errorf("empty or missing member name at index %d", idx)
-		}
-		if m.Email == "" {
-			return fmt.Errorf("empty or missing member email at index %d", idx)
-		}
-		if m.Constraints.Timezone == "" {
-			return fmt.Errorf("missing or empty timezone for user %q", m.Name)
-		}
-	}
-	return nil
-}
-
 func (c *Config) Validate() error {
 	if err := c.Omg.Validate(c); err != nil {
 		return fmt.Errorf("invalid `omg` config: %w", err)
@@ -168,9 +119,6 @@ func (c *Config) Validate() error {
 	}
 	if err := c.PagerDuty.Validate(c); err != nil {
 		return fmt.Errorf("invalid `pagerduty` config: %w", err)
-	}
-	if err := c.OncallGenerator.Validate(c); err != nil {
-		return fmt.Errorf("invalid `oncall_generator` config: %w", err)
 	}
 
 	return nil
