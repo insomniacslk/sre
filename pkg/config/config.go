@@ -25,13 +25,13 @@ func init() {
 }
 
 type Config struct {
-	Timezone        string                `mapstructure:"timezone"`
-	LogLevel        string                `mapstructure:"loglevel"`
-	Omg             OmgConfig             `mapstructure:"omg"`
-	Tools           ToolsConfig           `mapstructure:"tools"`
-	Vpn             VpnConfig             `mapstructure:"vpn"`
-	PagerDuty       PagerDutyConfig       `mapstructure:"pagerduty"`
-	Oncall          OncallConfig          `mapstructure:"oncall"`
+	Timezone  string          `mapstructure:"timezone"`
+	LogLevel  string          `mapstructure:"loglevel"`
+	Omg       OmgConfig       `mapstructure:"omg"`
+	Tools     ToolsConfig     `mapstructure:"tools"`
+	Vpn       VpnConfig       `mapstructure:"vpn"`
+	PagerDuty PagerDutyConfig `mapstructure:"pagerduty"`
+	Oncall    OncallConfig    `mapstructure:"oncall"`
 
 	// these fields are not coming from the config file and are set from the outside
 	ConfigDir     string       `mapstructure:"-"`
@@ -86,6 +86,11 @@ type OncallConfig struct {
 	DefaultSchedule         string                 `mapstructure:"default_schedule"`
 	DefaultScheduleDuration string                 `mapstructure:"default_schedule_duration"`
 	Shortlist               []OncallShortlistEntry `mapstructure:"shortlist"`
+	// Synonyms are extra equivalence groups for `oncall shortlist` matching:
+	// searching any term in a group matches entries tagged with any other
+	// term in that group (e.g. ["k8s", "kubernetes"]). Merged with a small
+	// built-in set. Comparison ignores case and separators.
+	Synonyms [][]string `mapstructure:"synonyms"`
 }
 
 // OncallShortlistEntry is a curated component-to-schedule mapping used by the
@@ -102,6 +107,10 @@ type OncallShortlistEntry struct {
 	// ScheduleID pins the entry to a specific PagerDuty schedule ID, skipping
 	// the search. Takes precedence over Query when both are set.
 	ScheduleID string `mapstructure:"schedule_id"`
+	// Aliases are additional keywords this entry matches against (beyond Name
+	// and Component), e.g. ["k8s", "control-plane"]. Matched case- and
+	// separator-insensitively.
+	Aliases []string `mapstructure:"aliases"`
 }
 
 func (o *OncallConfig) Validate(cfg *Config) error {

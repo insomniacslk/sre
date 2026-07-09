@@ -23,21 +23,33 @@ oncall:
   default_schedule: <your pagerduty schedule ID>
   default_schedule_duration: 168h # how far in the future we want to see the schedule. In Go duration format
 
+  # Extra synonym groups for `oncall shortlist` matching, merged with a small
+  # built-in set (which already includes k8s/kubernetes). Searching any term in
+  # a group matches entries tagged with any other term in it. Matching ignores
+  # case and separators, so "bare-metal" == "baremetal" without a synonym entry.
+  synonyms:
+    - [storage, disk, nvme]
+    - [network, networking, net]
+
   # Curated component -> schedule mapping for the `oncall shortlist` (alias `sl`)
   # subcommand. Each entry resolves to a PagerDuty schedule either by a free-text
   # `query` (like `oncall search`) or a pinned `schedule_id` (takes precedence).
-  # `component` is an optional keyword also matched by the [filter] argument, e.g.
-  # `sre oncall shortlist storage`. Replace the placeholders below with your own
-  # teams and their PagerDuty schedule names/IDs.
+  # The [filter] argument is matched (fuzzily, and synonym-aware) against each
+  # entry's `name`, `component` and `aliases`, e.g. `sre oncall shortlist k8s`.
+  # Use -e/--exact for whole-term matches and -s/--case-sensitive to require
+  # matching case. Replace the placeholders below with your own teams.
   shortlist:
     - name: Application / Services
       component: app
+      aliases: [services, backend]
       query: Application Team On-Call
     - name: Hardware / Provisioning
       component: hardware
+      aliases: [bare-metal, provisioning]
       query: Hardware Team On-Call
     - name: Kubernetes / Platform
       component: platform
+      aliases: [k8s, kubernetes]
       query: Platform Team On-Call
     - name: Networking
       component: network

@@ -13,8 +13,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	flagShortlistCaseSensitive bool
+	flagShortlistExact         bool
+)
+
 func init() {
 	OncallCmd.AddCommand(OncallShortlistCmd)
+	OncallShortlistCmd.Flags().BoolVarP(&flagShortlistCaseSensitive, "case-sensitive", "s", false, "Match the filter case-sensitively (default: case-insensitive)")
+	OncallShortlistCmd.Flags().BoolVarP(&flagShortlistExact, "exact", "e", false, "Require an exact term match instead of fuzzy substring matching")
 }
 
 var OncallShortlistCmd = &cobra.Command{
@@ -23,12 +30,24 @@ var OncallShortlistCmd = &cobra.Command{
 	Short:   "Show current oncalls for a curated shortlist of components (from config)",
 	Long: `Show the current oncall for each component in the configured shortlist.
 
-The shortlist is defined under `+ "`oncall.shortlist`" + ` in the config file. Each
+The shortlist is defined under ` + "`oncall.shortlist`" + ` in the config file. Each
 entry maps a component/team name to a PagerDuty schedule, resolved either by a
-free-text `+ "`query`" + ` (like `+ "`oncall search`" + `) or a pinned `+ "`schedule_id`" + `.
+free-text ` + "`query`" + ` (like ` + "`oncall search`" + `) or a pinned ` + "`schedule_id`" + `.
 
-With an optional [filter] argument, only entries whose name or component contain
-the (case-insensitive) filter are shown, e.g. "oncall shortlist security".`,
+With an optional [filter], only entries matching it are shown. Matching is fuzzy
+and forgiving by default:
+
+  - case-insensitive (use --case-sensitive/-s to require matching case);
+  - separator-insensitive, so "bare-metal", "bare_metal" and "baremetal" are
+    equivalent;
+  - synonym-aware, so "k8s" also matches "kubernetes" and vice-versa. Extend the
+    built-in synonyms under ` + "`oncall.synonyms`" + `, and tag individual entries with
+    extra keywords via their ` + "`aliases`" + ` list;
+  - substring-based, so "sec" matches "security". Use --exact/-e to require a
+    whole-term match instead.
+
+The filter is matched against each entry's component, name and aliases, e.g.
+"oncall shortlist k8s".`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		logrus.Debugf("Running oncall shortlist command")
@@ -43,15 +62,8 @@ the (case-insensitive) filter are shown, e.g. "oncall shortlist security".`,
 			return fmt.Errorf("no shortlist configured; add entries under `oncall.shortlist` (see the `config-example` subcommand)")
 		}
 
-		filter := strings.ToLower(strings.Join(args, " "))
-		selected := make([]config.OncallShortlistEntry, 0, len(entries))
-		for _, e := range entries {
-			if filter == "" ||
-				strings.Contains(strings.ToLower(e.Name), filter) ||
-				strings.Contains(strings.ToLower(e.Component), filter) {
-				selected = append(selected, e)
-			}
-		}
+		filter := strings.TrimSpace(strings.Join(args, " "))
+		selected := selectShortlistEntries(entries, filter, cfg.Oncall.Synonyms, flagShortlistExact, flagShortlistCaseSensitive)
 		if len(selected) == 0 {
 			fmt.Printf("No shortlist entries match %q\n", filter)
 			return nil
