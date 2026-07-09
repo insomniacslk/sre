@@ -82,13 +82,37 @@ func (v *VpnConfig) Validate(cfg *Config) error {
 }
 
 type OncallConfig struct {
-	DefaultQuery            string `mapstructure:"default_query"`
-	DefaultSchedule         string `mapstructure:"default_schedule"`
-	DefaultScheduleDuration string `mapstructure:"default_schedule_duration"`
+	DefaultQuery            string                 `mapstructure:"default_query"`
+	DefaultSchedule         string                 `mapstructure:"default_schedule"`
+	DefaultScheduleDuration string                 `mapstructure:"default_schedule_duration"`
+	Shortlist               []OncallShortlistEntry `mapstructure:"shortlist"`
+}
+
+// OncallShortlistEntry is a curated component-to-schedule mapping used by the
+// `oncall shortlist` subcommand. Each entry resolves to a PagerDuty schedule
+// either directly by `schedule_id` or by searching schedules with `query`.
+type OncallShortlistEntry struct {
+	// Name is the human-friendly component/team label shown in the output.
+	Name string `mapstructure:"name"`
+	// Component is an optional short keyword used to match against the
+	// subcommand's filter argument (in addition to Name).
+	Component string `mapstructure:"component"`
+	// Query is a free-text schedule search (as used by `oncall search`).
+	Query string `mapstructure:"query"`
+	// ScheduleID pins the entry to a specific PagerDuty schedule ID, skipping
+	// the search. Takes precedence over Query when both are set.
+	ScheduleID string `mapstructure:"schedule_id"`
 }
 
 func (o *OncallConfig) Validate(cfg *Config) error {
-	// no validation at this stage
+	for idx, e := range o.Shortlist {
+		if e.Name == "" {
+			return fmt.Errorf("`oncall.shortlist` entry at index %d is missing a `name`", idx)
+		}
+		if e.Query == "" && e.ScheduleID == "" {
+			return fmt.Errorf("`oncall.shortlist` entry %q must set either `query` or `schedule_id`", e.Name)
+		}
+	}
 	return nil
 }
 

@@ -22,3 +22,32 @@ oncall:
   default_query: your oncall schedule name
   default_schedule: <your pagerduty schedule ID>
   default_schedule_duration: 168h # how far in the future we want to see the schedule. In Go duration format
+
+  # Curated component -> schedule mapping for the `oncall shortlist` (alias `sl`)
+  # subcommand. Each entry resolves to a PagerDuty schedule either by a free-text
+  # `query` (like `oncall search`) or a pinned `schedule_id` (takes precedence).
+  # `component` is an optional keyword also matched by the [filter] argument, e.g.
+  # `sre oncall shortlist storage`. Replace the placeholders below with your own
+  # teams and their PagerDuty schedule names/IDs.
+  shortlist:
+    - name: Application / Services
+      component: app
+      query: Application Team On-Call
+    - name: Hardware / Provisioning
+      component: hardware
+      query: Hardware Team On-Call
+    - name: Kubernetes / Platform
+      component: platform
+      query: Platform Team On-Call
+    - name: Networking
+      component: network
+      query: Network Team On-Call
+    - name: Storage
+      component: storage
+      query: Storage Team On-Call
+    - name: Security
+      component: security
+      query: Security Team On-Call
+    - name: Incident response
+      component: incident
+      schedule_id: <your pagerduty schedule ID>
