@@ -14,16 +14,21 @@ func TestSelectShortlistEntries(t *testing.T) {
 		{Name: "Data", Component: "data", Aliases: []string{"db", "database"}},
 	}
 
+	// Synonyms come from config now (nothing is hardcoded), so pass groups in.
+	syn := [][]string{{"k8s", "kubernetes", "kube"}}
+
 	tests := []struct {
 		name          string
 		query         string
+		synonyms      [][]string
 		exact         bool
 		caseSensitive bool
 		wantComps     []string
 	}{
 		{name: "empty matches all", query: "", wantComps: []string{"kubernetes", "bare-metal", "security", "data"}},
-		{name: "synonym k8s -> kubernetes", query: "k8s", wantComps: []string{"kubernetes"}},
-		{name: "synonym kubernetes -> k8s label too", query: "kubernetes", wantComps: []string{"kubernetes"}},
+		{name: "synonym k8s -> kubernetes", query: "k8s", synonyms: syn, wantComps: []string{"kubernetes"}},
+		{name: "synonym kubernetes -> k8s label too", query: "kubernetes", synonyms: syn, wantComps: []string{"kubernetes"}},
+		{name: "no synonyms configured, k8s misses kubernetes", query: "k8s", wantComps: nil},
 		{name: "separator insensitive baremetal", query: "baremetal", wantComps: []string{"bare-metal"}},
 		{name: "separator insensitive bare_metal", query: "bare_metal", wantComps: []string{"bare-metal"}},
 		{name: "substring fuzzy sec", query: "sec", wantComps: []string{"security"}},
@@ -31,7 +36,7 @@ func TestSelectShortlistEntries(t *testing.T) {
 		{name: "alias match database", query: "database", wantComps: []string{"data"}},
 		{name: "exact rejects substring", query: "sec", exact: true, wantComps: nil},
 		{name: "exact accepts full term", query: "security", exact: true, wantComps: []string{"security"}},
-		{name: "exact still honors synonyms", query: "k8s", exact: true, wantComps: []string{"kubernetes"}},
+		{name: "exact still honors synonyms", query: "k8s", synonyms: syn, exact: true, wantComps: []string{"kubernetes"}},
 		{name: "case-insensitive default", query: "SECURITY", wantComps: []string{"security"}},
 		{name: "case-sensitive misses", query: "SECURITY", caseSensitive: true, wantComps: nil},
 		{name: "no match", query: "storage", wantComps: nil},
@@ -39,7 +44,7 @@ func TestSelectShortlistEntries(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := selectShortlistEntries(entries, tc.query, nil, tc.exact, tc.caseSensitive)
+			got := selectShortlistEntries(entries, tc.query, tc.synonyms, tc.exact, tc.caseSensitive)
 			var gotComps []string
 			for _, e := range got {
 				gotComps = append(gotComps, e.Component)

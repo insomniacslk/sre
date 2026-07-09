@@ -40,9 +40,9 @@ and forgiving by default:
   - case-insensitive (use --case-sensitive/-s to require matching case);
   - separator-insensitive, so "bare-metal", "bare_metal" and "baremetal" are
     equivalent;
-  - synonym-aware, so "k8s" also matches "kubernetes" and vice-versa. Extend the
-    built-in synonyms under ` + "`oncall.synonyms`" + `, and tag individual entries with
-    extra keywords via their ` + "`aliases`" + ` list;
+  - synonym-aware via equivalence groups you define under ` + "`oncall.synonyms`" + `
+    (e.g. so "k8s" also matches "kubernetes" and vice-versa), and per-entry
+    ` + "`aliases`" + ` keywords matched alongside name/component;
   - substring-based, so "sec" matches "security". Use --exact/-e to require a
     whole-term match instead.
 

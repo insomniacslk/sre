@@ -6,15 +6,6 @@ import (
 	"github.com/insomniacslk/sre/pkg/config"
 )
 
-// builtinSynonyms are equivalence groups always applied when matching shortlist
-// entries, in addition to any groups configured under `oncall.synonyms`.
-// Searching any term in a group matches entries tagged with any other term in
-// the same group. Terms are compared after normalization (see normalizeTerm),
-// so case and separators don't matter. Keep these generic and widely-applicable.
-var builtinSynonyms = [][]string{
-	{"k8s", "kubernetes", "kube"},
-}
-
 // termSeparators are stripped during normalization so that, e.g., "bare-metal",
 // "bare_metal", "bare metal" and "baremetal" all compare equal.
 var termSeparators = strings.NewReplacer("-", "", "_", "", " ", "", "/", "", ".", "")
@@ -83,15 +74,13 @@ func shortlistEntryMatches(e config.OncallShortlistEntry, queryTerms map[string]
 }
 
 // selectShortlistEntries returns the entries matching the query. An empty query
-// matches everything. builtinSynonyms are merged with the configured groups.
-func selectShortlistEntries(entries []config.OncallShortlistEntry, query string, configuredSynonyms [][]string, exact, caseSensitive bool) []config.OncallShortlistEntry {
+// matches everything. Synonym groups (from `oncall.synonyms` in the config) let
+// a search term match entries tagged with an equivalent term.
+func selectShortlistEntries(entries []config.OncallShortlistEntry, query string, synonyms [][]string, exact, caseSensitive bool) []config.OncallShortlistEntry {
 	if strings.TrimSpace(query) == "" {
 		return entries
 	}
-	groups := make([][]string, 0, len(builtinSynonyms)+len(configuredSynonyms))
-	groups = append(groups, builtinSynonyms...)
-	groups = append(groups, configuredSynonyms...)
-	queryTerms := expandSynonyms(query, groups, caseSensitive)
+	queryTerms := expandSynonyms(query, synonyms, caseSensitive)
 
 	selected := make([]config.OncallShortlistEntry, 0, len(entries))
 	for _, e := range entries {

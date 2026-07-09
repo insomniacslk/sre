@@ -23,11 +23,14 @@ oncall:
   default_schedule: <your pagerduty schedule ID>
   default_schedule_duration: 168h # how far in the future we want to see the schedule. In Go duration format
 
-  # Extra synonym groups for `oncall shortlist` matching, merged with a small
-  # built-in set (which already includes k8s/kubernetes). Searching any term in
-  # a group matches entries tagged with any other term in it. Matching ignores
-  # case and separators, so "bare-metal" == "baremetal" without a synonym entry.
+  # Synonym groups for `oncall shortlist` matching. Searching any term in a
+  # group matches entries tagged with any other term in it, in either direction.
+  # Matching ignores case and separators, so "bare-metal" == "baremetal" even
+  # without a synonym entry; use synonyms for abbreviations/aliases that aren't
+  # just punctuation, e.g. bm -> baremetal or k8s -> kubernetes. Edit freely.
   synonyms:
+    - [k8s, kubernetes, kube]
+    - [baremetal, bm, bare-metal]
     - [storage, disk, nvme]
     - [network, networking, net]
 
